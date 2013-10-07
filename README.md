@@ -31,7 +31,7 @@ please report any bug or feature request using the [issues webpage](https://bitb
 ## Structure
 
 All the python code should be divided into meaningful packages and put
-inside the `dpc\_reconstruction` folder.
+inside the `dpc_reconstruction` folder.
 
 ## Code style
 
