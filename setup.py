@@ -9,7 +9,7 @@ from version import get_git_version
 setup(
     name = "DPCReconstruction",
     version = get_git_version(),
-    packages = find_packages(),
+    packages = find_packages(exclude='test'),
     scripts = [
         ],
 
