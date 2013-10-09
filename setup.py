@@ -30,6 +30,6 @@ setup(
     license = "GNU GPL 3",
     keywords = "",
     # project home page, if any
-    url = "https://bitbucket.org/pcmammography/dpc_reconstruction",
+    url = "https://bitbucket.org/psitomcat/dpc_reconstruction",
     # could also include long_description, download_url, classifiers, etc.
 )

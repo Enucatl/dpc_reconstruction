@@ -26,7 +26,10 @@ please report any bug or feature request using the [issues webpage](https://bitb
 ## Install
 
     :::bash
-    python setup.py develop --user
+    python setup.py develop
+
+You can add the `--user` to install it without root permissions
+(recommended).
     
 ## Structure
 

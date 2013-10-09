@@ -2,12 +2,9 @@
 
 import numpy as np
 from numpy import pi
-import h5py
-import tempfile
-import os
 import random
 
-from dpc.phase_stepping_utils import get_signals
+from dpc_reconstruction.phase_stepping import get_signals
 
 def phase_stepping_curve(c, v, phi, n, periods):
     """Return the phase stepping curve sampled over 'periods' periods
@@ -23,7 +20,7 @@ def phase_stepping_curve(c, v, phi, n, periods):
     angles = p * xs + phi
     return c * (1 + v * np.cos(angles))
 
-class TestDPCRadiography(object):
+class TestDPCReconstruction(object):
     """Test the phase stepping curve reconstruction.
     
     """
@@ -34,10 +31,8 @@ class TestDPCRadiography(object):
 
         """
         N = 100
-        pixels = 1024
-        for i in range(N):
-            temp_file_name = "test_dpc_radiography_{0}.hdf5".format(i)
-            #hdf_file = h5py.File(temp_file_name)
+        pixels = 10
+        for _ in range(N):
             constant = random.uniform(100, 100000)
             phase = random.uniform(-pi / 2, pi / 2)
             visibility = random.uniform(0, 1)
@@ -45,12 +40,10 @@ class TestDPCRadiography(object):
             steps = random.randint(4, 24) * periods
             curve = phase_stepping_curve(constant, visibility,
                     phase, steps, periods)
-            all_pixels = np.transpose(
-                    np.tile(curve, (pixels, 1)))[:, np.newaxis]
-            print(steps, periods)
-            print(all_pixels.shape)
+            #repeat the curve for 10x10 pixels
+            all_pixels = np.tile(curve, (pixels, pixels, 1))
             a0, phi, a1 = get_signals(
-                    all_pixels, None, periods)
+                    all_pixels, periods)
             assert np.allclose(a0 / steps, constant)
             assert np.allclose(phi, phase)
             assert np.allclose(2 * a1 / a0, visibility)

@@ -1,0 +1,10 @@
+lib
+test/png
+*pyc
+*.gif
+*.hdf5
+*.swp
+callgrind*
+*debuglog*
+*egg-info*
+RELEASE-VERSION
