@@ -16,7 +16,7 @@ setup(
     install_requires = [
         'h5py',
         'numpy',
-        'scikit-image'],
+        ],
 
     package_data = {
         # If any package contains *.txt or *.rst files, include them:
