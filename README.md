@@ -37,7 +37,7 @@ please report any bug or feature request using the [issues webpage](https://bitb
     :::bash
     python setup.py develop
 
-You can add the `--user` to install it without root permissions (recommended).
+You can add the `--user` flag to install it without root permissions (recommended).
     
 
 ## Structure
