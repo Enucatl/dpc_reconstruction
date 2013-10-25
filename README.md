@@ -12,29 +12,39 @@ matlab!)
 
 [HDF5](http://www.hdfgroup.org/HDF5/) for the image storage
 
+[ruffus](http://www.ruffus.org.uk) for the pipeline
+
+
+## Recommended
+
+[pyenv](https://github.com/yyuu/pyenv) to easily manage different python
+versions
+
 
 ## Report Bugs & Request Features
 
-please report any bug or feature request using the [issues webpage](https://bitbucket.org/pcmammography/dpc_reconstruction/issues?status=new&status=open).
+please report any bug or feature request using the [issues webpage](https://bitbucket.org/psitomcat/dpc_reconstruction/issues?status=new&status=open).
 
 
 ## Download
 
     :::bash
-    git clone git@bitbucket.org:pcmammography/dpc_reconstruction.git
+    git clone git@bitbucket.org:psitomcat/dpc_reconstruction.git
+
 
 ## Install
 
     :::bash
     python setup.py develop
 
-You can add the `--user` to install it without root permissions
-(recommended).
+You can add the `--user` to install it without root permissions (recommended).
     
+
 ## Structure
 
 All the python code should be divided into meaningful packages and put
 inside the `dpc_reconstruction` folder.
+
 
 ## Code style
 

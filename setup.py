@@ -16,6 +16,7 @@ setup(
     install_requires = [
         'h5py',
         'numpy',
+        'ruffus',
         ],
 
     package_data = {
