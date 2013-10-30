@@ -5,79 +5,108 @@ HDF5 file.
 
 from __future__ import division, print_function
 
-import os
-from glob import glob
-from itertools import islice
-
-import h5py
 import numpy as np
 
-from dpc_reconstruction.progress_bar import progress_bar
+from pypes.component import Component
+from pypesvds.lib.packet import Packet
 
 #number of lines in a CCD FLI header
 _HEADER_LINES = 16
+_RAW_IMAGES_NAME = "raw_images"
 
-def _analyse_header(input_file_name):
-    """Analyse a CCD FLI header in a RAW file
+class FliRawHeaderSplitter(Component):
 
-    Return the bytes in the header, exposure, min_x, max_x, min_y, max_y.
+    """Split the stream of binary data coming from the FLI CCD raw format
+    into three outputs: the filename (string), the header (binary) and the
+    image data (binary)."""
 
-    """
-    input_file = open(input_file_name, 'rb')
-    header = list(islice(input_file, _HEADER_LINES))
-    header_len = len("".join(header))
-    exposure_time = float(header[4].split()[-1])
-    min_y, min_x, max_y, max_x = [
-            int(x) for x in header[-2].split()[2:]]
-    input_file.close()
-    return header_len, exposure_time, min_x, max_x, min_y, max_y
+    __metatype__ = "ADAPTER"
 
-def _read_data(input_file_name):
-    """Read a single image into a numpy array,
-    shaped according to the header."""
-    (header_len, _,
-                    min_x, max_x, 
-                    min_y, max_y) = _analyse_header(input_file_name)
-    input_file = open(input_file_name, 'rb')
-    input_file.read(header_len + 1)
-    image = np.reshape(
-            np.fromfile(input_file, dtype=np.uint16),
-            (max_y - min_y, max_x - min_x),
-            order='FORTRAN')
-    input_file.close()
-    return image
+    def __init__(self, file_objects):
+        super(FliRawHeaderSplitter, self).__init__()
+        self.add_output("header", "lines with metadata from the camera")
+        self._file_objects = file_objects
+        
 
-def raw_folder_to_hdf5(folder_name, output_name):
-    """Convert a folder with RAW files to a single hdf5 file.
-    
-    """
-    if not os.path.isdir(folder_name):
-        error = "make_hdf5.py: not a folder: " + folder_name
-        raise OSError(error)
-    print("make_hdf5.py: converting", folder_name)
-    files = sorted(glob(os.path.join(folder_name, "*.raw")))
-    output_file = h5py.File(output_name, 'w')
-    n_files = len(files)
-    for i, input_file_name in enumerate(files):
-        print(progress_bar((i + 1) / n_files), end="\r")
-        if i == 0:
-            #create dataset with the size of the first image
-            (_, exposure_time,
-                    min_x, max_x, 
-                    min_y, max_y) = _analyse_header(input_file_name)
-            dataset = output_file.create_dataset("raw_images", 
-                    (max_y - min_y,
-                    max_x - min_x,
-                    len(files)),
-                    dtype=np.uint16)
-            dataset.attrs['exposure_time'] = exposure_time
-            dataset.attrs['min_x'] = min_x
-            dataset.attrs['min_y'] = min_y
-            dataset.attrs['max_x'] = max_x
-            dataset.attrs['max_y'] = max_y
-        dataset[:, :, i] = _read_data(input_file_name)
-    output_file.close()
-    print()
-    print("make_hdf5.py: written", output_name)
-    print("make_hdf5.py: done!")
-    return output_name
+    def run(self):
+        while True:
+            self.receive("in")
+            for file_object in self._file_objects:
+                image_packet = Packet()
+                header_packet = Packet()
+                image_packet.set("file_name", file_object.name)
+                lines = file_object.readlines()
+                header_packet.set("data", lines[:_HEADER_LINES])
+                #first byte of the last line is useless
+                image_packet.set("data", lines[-1][1:])
+                self.send("header", header_packet)
+                self.send("out", image_packet)
+            self.yield_ctrl()
+
+class FliRawHeaderAnalyzer(Component):
+
+    """Analyze the header and get the metadata for the picture."""
+
+    __metatype__ = "TRANSFORMER"
+
+    def __init__(self):
+        super(FliRawHeaderAnalyzer, self).__init__()
+        
+    def run(self):
+        while True:
+            packets = self.receive_all('in')
+            for packet in packets:
+                header = packet.get("data")
+                exposure_time = float(header[4].split()[-1])
+                min_y, min_x, max_y, max_x = [
+                        int(x) for x in header[-2].split()[2:]]
+                packet.delete("data") #header is not useful anymore
+                packet.set("min_y", min_y)
+                packet.set("max_y", max_y)
+                packet.set("min_x", min_x)
+                packet.set("max_x", max_x)
+                packet.set("exposure_time", exposure_time)
+                self.send("out", packet)
+            self.yield_ctrl()
+
+class FliRaw2Numpy(Component):
+
+    """Get the header information merged with the binary image, and pass the
+    latter in numpy format."""
+
+    __metatype__ = "TRANSFORMER"
+
+    def __init__(self):
+        super(FliRaw2Numpy, self).__init__()
+
+    def run(self):
+        while True:
+            packets = self.receive_all('in')
+            for packet in packets:
+                header = packet.get("data")
+                max_x = packet.get("max_x")
+                min_x = packet.get("min_x")
+                min_y = packet.get("min_y")
+                max_y = packet.get("max_y")
+                image = np.reshape(
+                        np.frombuffer(packet.get("data"), dtype=np.uint16),
+                        (max_y - min_y, max_x - min_x))
+                packet.delete("data") #remove binary data
+                packet.set("image", image)
+                self.send("out", packet)
+                print("2numpy", packet.get("file_name"))
+            self.yield_ctrl()
+
+class Printer(Component):
+    __metatype__ = 'PUBLISHER'
+
+    def __init__(self):
+        Component.__init__(self)
+
+    def run(self):
+        while True:
+            for data in self.receive_all('in'):
+                image = data.get("image")
+                print(image)
+                print(image.shape)
+            self.yield_ctrl()

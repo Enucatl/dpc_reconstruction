@@ -6,10 +6,16 @@ from __future__ import division, print_function
 
 import argparse
 import os
+from glob import glob
 
-import ruffus
+from pypes.pipeline import Dataflow
+from pypesvds.plugins.mergeoperator.mergeoperator import Merge
 
-from dpc_reconstruction.io.fliccd_hedpc import raw_folder_to_hdf5
+from dpc_reconstruction.io.fliccd_hedpc import FliRawHeaderSplitter
+from dpc_reconstruction.io.fliccd_hedpc import FliRawHeaderAnalyzer
+from dpc_reconstruction.io.fliccd_hedpc import FliRaw2Numpy
+from dpc_reconstruction.io.fliccd_hedpc import Printer
+from dpc_reconstruction.io.hdf5 import Hdf5Publisher
 
 commandline_parser = argparse.ArgumentParser(description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -27,16 +33,33 @@ commandline_parser.add_argument('--jobs', '-j',
         help='specifies the number of jobs running simultaneously.')
 
 def main(args):
-    output_files = [os.path.normpath(f) + ".hdf5"
-            for f in args.folder]
-    target = ruffus.files(zip(args.folder, output_files))(raw_folder_to_hdf5)
-    if args.overwrite:
-        force_run = [target]
-    else:
-        force_run = []
-    ruffus.pipeline_run([target],
-            forcedtorun_tasks=force_run, one_second_per_job=False,
-            multiprocess=args.jobs, verbose=5)
+    for folder in args.folder:
+        files = sorted(glob(os.path.join(folder, "*.raw")))
+        files = [open(file_name) for file_name in files]
+        header_splitter = FliRawHeaderSplitter(files)
+        header_analyzer = FliRawHeaderAnalyzer()
+        merger = Merge()
+        raw2numpy = FliRaw2Numpy()
+        printer = Printer()
+        hdf5publisher = Hdf5Publisher(args.overwrite)
+        network = {
+                header_splitter: {
+                    header_analyzer: ('header', 'in'),
+                    merger: ('out', 'in'),
+                    },
+                header_analyzer: {
+                    merger: ('out', 'in2'),
+                    },
+                merger: {
+                    raw2numpy: ('out', 'in'),
+                    },
+                raw2numpy: {
+                    hdf5publisher: ('out', 'in')
+                    },
+                }
+        pipe = Dataflow(network)
+        pipe.send(None)
+        pipe.close()
 
 if __name__ == '__main__':
     main(commandline_parser.parse_args())
