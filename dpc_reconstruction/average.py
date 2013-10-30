@@ -4,9 +4,9 @@
 
 import numpy as np
 
-def average(list_of_images, axis=2):
-    """Use the median to average all the images along the second axis.
+def average(dataset, axis=-1):
+    """Use the median to average all the images along the last axis.
     The median is more robust than the mean against outliers.
 
     """
-    return [np.median(image, axis=axis) for image in list_of_images]
+    return np.median(dataset, axis=axis)

@@ -13,7 +13,7 @@ def get_signals(phase_stepping_curves, n_periods=1, flat=None):
 
     Input:
     phase_stepping_curves is a numpy array with the phase stepping curves
-    along the second axis (axis=2).
+    along the last axis (axis=-1).
 
     n_periods is the number of periods used in the phase stepping
 
@@ -26,14 +26,10 @@ def get_signals(phase_stepping_curves, n_periods=1, flat=None):
 
     """
 
-    n_phase_steps = phase_stepping_curves.shape[2]
-    transformed = np.fft.rfft(
-            phase_stepping_curves,
-            n_phase_steps - 1,
-            axis=2)
-    a0 = np.abs(transformed[:, :, 0]) 
-    a1 = np.abs(transformed[:, :, n_periods]) 
-    phi1 = np.angle(transformed[:, :, n_periods])
+    transformed = np.fft.rfft(phase_stepping_curves)
+    a0 = np.abs(transformed[..., 0]) 
+    a1 = np.abs(transformed[..., n_periods]) 
+    phi1 = np.angle(transformed[..., n_periods])
     if flat:
         a0_flat, phi_flat, a1_flat = flat
         a0 /= a0_flat
