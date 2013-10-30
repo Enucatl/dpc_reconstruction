@@ -16,7 +16,7 @@ def phase_stepping_curve(c, v, phi, n, periods):
     p = 2 * pi * periods / n #period
     #last step (n + 1) taken here and discarded in
     #phase_stepping_utils.get_signals
-    xs = np.arange(n + 1)
+    xs = np.arange(n)
     angles = p * xs + phi
     return c * (1 + v * np.cos(angles))
 
@@ -42,8 +42,7 @@ class TestDPCReconstruction(object):
                     phase, steps, periods)
             #repeat the curve for 10x10 pixels
             all_pixels = np.tile(curve, (pixels, pixels, 1))
-            a0, phi, a1 = get_signals(
-                    all_pixels, periods)
+            a0, phi, a1 = get_signals(all_pixels, n_periods=periods)
             assert np.allclose(a0 / steps, constant)
             assert np.allclose(phi, phase)
             assert np.allclose(2 * a1 / a0, visibility)
