@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 from version import get_git_version
 
 setup(
-    name = "DPCReconstruction",
+    name = "dpc_reconstruction",
     version = get_git_version(),
     packages = find_packages(exclude='test'),
     scripts = [
@@ -17,13 +17,26 @@ setup(
     install_requires = [
         'h5py',
         'numpy',
-        'ruffus',
+        'pypes',
+        'pypesvds',
         ],
 
     package_data = {
         # If any package contains *.txt or *.rst files, include them:
         '': ['*.txt', '*.rst'],
     },
+    
+    entry_points = """
+        [pypesvds.plugins] 
+        dpc_reconstruction = dpc_reconstruction.template:Template
+
+        [distutils.setup_keywords]
+        paster_plugins = setuptools.dist:assert_string_list
+  
+        [egg_info.writers]
+        paster_plugins.txt = setuptools.command.egg_info:write_arg
+    """,
+
 
     # metadata for upload to PyPI
     author = "TOMCAT DPC group",
