@@ -29,22 +29,24 @@ class FliRawReader(pypes.component.Component):
 
     def __init__(self):
         pypes.component.Component.__init__(self)
-        self.set_parameter("folder",
-                "/home/abis_m/lab/dpc_reconstruction/test/fliccd_data")
 
         # log successful initialization message
         log.info('pypes.component.Component Initialized: {0}'.format(
             self.__class__.__name__))
         
     def run(self):
-        log.info("running Reader")
         while True:
-            self.receive("in")
-            log.info("received in")
-            folder = self.get_parameter("folder")
+            data = self.receive("in")
+            folder = data.get('data')
+            if folder is None:
+                self.yield_ctrl()
+                continue
             input_files = sorted(glob(
-                os.path.join(folder, "*.raw")))
-            log.info(input_files)
+                os.path.join(
+                    os.path.expanduser(folder),
+                    "*.raw")))
+            log.info("{0} is reading {1}".format(
+                self.__class__.__name__, folder))
             for input_file in input_files:
                 try:
                     packet = pypesvds.lib.packet.Packet()
