@@ -33,8 +33,8 @@ setup(
         ],
 
     install_requires = [
-        'h5py',
         'numpy',
+        'h5py',
         'pypes',
         'pypesvds',
         ],
