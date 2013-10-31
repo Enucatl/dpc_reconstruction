@@ -1,17 +1,17 @@
 import logging
 import traceback
 
-from pypes.component import Component
+import pypes.component
 
 log = logging.getLogger(__name__)
 
-class TemplateComponent(Component):
+class TemplateComponent(pypes.component.Component):
     # defines the type of component we're creating.
     __metatype__ = 'TRANSFORMER'
 
     def __init__(self):
         # initialize parent class
-        Component.__init__(self)
+        pypes.component.Component.__init__(self)
         
         # Optionally add/remove component ports
         # self.remove_output('out')
@@ -22,7 +22,7 @@ class TemplateComponent(Component):
         #self.set_parameter('MyParam', 'opt1', ['opt1', 'opt2', 'opt3'])
 
         # log successful initialization message
-        log.info('Component Initialized: %s' % self.__class__.__name__)
+        log.info('pypes.component.Component Initialized: %s' % self.__class__.__name__)
 
     def run(self):
         # Define our components entry point
@@ -36,7 +36,7 @@ class TemplateComponent(Component):
                     # perform your custom logic here
                     pass
                 except Exception as e:
-                    log.error('Component Failed: %s' % self.__class__.__name__)
+                    log.error('pypes.component.Component Failed: %s' % self.__class__.__name__)
                     log.error('Reason: %s' % str(e))                    
                     log.error(traceback.print_exc())
 

@@ -8,3 +8,5 @@ callgrind*
 *debuglog*
 *egg-info*
 RELEASE-VERSION
+build
+dist

@@ -12,7 +12,7 @@ matlab!)
 
 [HDF5](http://www.hdfgroup.org/HDF5/) for the image storage
 
-[ruffus](http://www.ruffus.org.uk) for the pipeline
+[pypes](http://www.ruffus.org.uk) for the pipeline
 
 
 ## Recommended
@@ -35,10 +35,8 @@ please report any bug or feature request using the [issues webpage](https://bitb
 ## Install
 
     :::bash
-    python setup.py develop
+    python setup.py bdist_egg --dist-dir ~/bin/pypes/plugins/
 
-You can add the `--user` flag to install it without root permissions (recommended).
-    
 
 ## Structure
 

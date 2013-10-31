@@ -3,18 +3,23 @@ Read the RAW images saved by the CCDFLI camera and merge them into a single
 HDF5 file.
 """
 
-from __future__ import division, print_function
+from __future__ import division, print_function 
+
+import logging
+import traceback
+from glob import glob
+import os
 
 import numpy as np
-
-from pypes.component import Component
-from pypesvds.lib.packet import Packet
+import pypes.component 
+import pypesvds.lib.packet
 
 #number of lines in a CCD FLI header
 _HEADER_LINES = 16
-_RAW_IMAGES_NAME = "raw_images"
 
-class FliRawHeaderSplitter(Component):
+log = logging.getLogger(__name__)
+
+class FliRawReader(pypes.component.Component):
 
     """Split the stream of binary data coming from the FLI CCD raw format
     into three outputs: the filename (string), the header (binary) and the
@@ -22,54 +27,77 @@ class FliRawHeaderSplitter(Component):
 
     __metatype__ = "ADAPTER"
 
-    def __init__(self, file_objects):
-        super(FliRawHeaderSplitter, self).__init__()
-        self.add_output("header", "lines with metadata from the camera")
-        self._file_objects = file_objects
-        
+    def __init__(self):
+        pypes.component.Component.__init__(self)
+        self.set_parameter("folder",
+                "/home/abis_m/lab/dpc_reconstruction/test/fliccd_data")
 
+        # log successful initialization message
+        log.info('pypes.component.Component Initialized: {0}'.format(
+            self.__class__.__name__))
+        
     def run(self):
+        log.info("running Reader")
         while True:
             self.receive("in")
-            for file_object in self._file_objects:
-                image_packet = Packet()
-                header_packet = Packet()
-                image_packet.set("file_name", file_object.name)
-                lines = file_object.readlines()
-                header_packet.set("data", lines[:_HEADER_LINES])
-                #first byte of the last line is useless
-                image_packet.set("data", lines[-1][1:])
-                self.send("header", header_packet)
-                self.send("out", image_packet)
+            log.info("received in")
+            folder = self.get_parameter("folder")
+            input_files = sorted(glob(
+                os.path.join(folder, "*.raw")))
+            log.info(input_files)
+            for input_file in input_files:
+                try:
+                    packet = pypesvds.lib.packet.Packet()
+                    lines = open(input_file).readlines()
+                    packet.set("file_name", input_file)
+                    packet.set("header", lines[:_HEADER_LINES])
+                    #first byte of the last line is useless
+                    packet.set("image_data", lines[-1][1:])
+                    log.info("read file {0}".format(input_file))
+                except Exception as e:
+                    log.error('pypes.component.Component Failed: %s' % self.__class__.__name__)
+                    log.error('Reason: %s' % str(e))                    
+                    log.error(traceback.print_exc())
+                self.send("out", packet)
             self.yield_ctrl()
 
-class FliRawHeaderAnalyzer(Component):
+class FliRawHeaderAnalyzer(pypes.component.Component):
 
     """Analyze the header and get the metadata for the picture."""
 
     __metatype__ = "TRANSFORMER"
 
     def __init__(self):
-        super(FliRawHeaderAnalyzer, self).__init__()
+        pypes.component.Component.__init__(self)
+        # log successful initialization message
+        log.info('pypes.component.Component Initialized: {0}'.format(
+            self.__class__.__name__))
         
     def run(self):
         while True:
             packets = self.receive_all('in')
             for packet in packets:
-                header = packet.get("data")
-                exposure_time = float(header[4].split()[-1])
-                min_y, min_x, max_y, max_x = [
-                        int(x) for x in header[-2].split()[2:]]
-                packet.delete("data") #header is not useful anymore
-                packet.set("min_y", min_y)
-                packet.set("max_y", max_y)
-                packet.set("min_x", min_x)
-                packet.set("max_x", max_x)
-                packet.set("exposure_time", exposure_time)
+                try:
+                    header = packet.get("header")
+                    exposure_time = float(header[4].split()[-1])
+                    min_y, min_x, max_y, max_x = [
+                            int(x) for x in header[-2].split()[2:]]
+                    packet.delete("header") #header is not useful anymore
+                    packet.set("min_y", min_y)
+                    packet.set("max_y", max_y)
+                    packet.set("min_x", min_x)
+                    packet.set("max_x", max_x)
+                    packet.set("exposure_time", exposure_time)
+                except Exception as e:
+                    log.error('Component Failed: %s' % self.__class__.__name__)
+                    log.error('Reason: %s' % str(e))                    
+                    log.error(traceback.print_exc())
+                # send the document to the next component
                 self.send("out", packet)
+            # yield the CPU, allowing another component to run
             self.yield_ctrl()
 
-class FliRaw2Numpy(Component):
+class FliRaw2Numpy(pypes.component.Component):
 
     """Get the header information merged with the binary image, and pass the
     latter in numpy format."""
@@ -77,36 +105,30 @@ class FliRaw2Numpy(Component):
     __metatype__ = "TRANSFORMER"
 
     def __init__(self):
-        super(FliRaw2Numpy, self).__init__()
+        pypes.component.Component.__init__(self)
+        # log successful initialization message
+        log.info('pypes.component.Component Initialized: {0}'.format(
+            self.__class__.__name__))
 
     def run(self):
         while True:
             packets = self.receive_all('in')
             for packet in packets:
-                header = packet.get("data")
-                max_x = packet.get("max_x")
-                min_x = packet.get("min_x")
-                min_y = packet.get("min_y")
-                max_y = packet.get("max_y")
-                image = np.reshape(
-                        np.frombuffer(packet.get("data"), dtype=np.uint16),
-                        (max_y - min_y, max_x - min_x))
-                packet.delete("data") #remove binary data
-                packet.set("image", image)
+                try:
+                    max_x = packet.get("max_x")
+                    min_x = packet.get("min_x")
+                    min_y = packet.get("min_y")
+                    max_y = packet.get("max_y")
+                    image = np.reshape(
+                            np.frombuffer(packet.get("image_data"), dtype=np.uint16),
+                            (max_y - min_y, max_x - min_x))
+                    packet.delete("image_data") #remove binary data
+                    packet.set("image", image)
+                except Exception as e:
+                    log.error('Component Failed: %s' % self.__class__.__name__)
+                    log.error('Reason: %s' % str(e))                    
+                    log.error(traceback.print_exc())
+                # send the document to the next component
                 self.send("out", packet)
-                print("2numpy", packet.get("file_name"))
-            self.yield_ctrl()
-
-class Printer(Component):
-    __metatype__ = 'PUBLISHER'
-
-    def __init__(self):
-        Component.__init__(self)
-
-    def run(self):
-        while True:
-            for data in self.receive_all('in'):
-                image = data.get("image")
-                print(image)
-                print(image.shape)
+            # yield the CPU, allowing another component to run
             self.yield_ctrl()
