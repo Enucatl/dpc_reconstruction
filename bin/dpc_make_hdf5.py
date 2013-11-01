@@ -8,6 +8,8 @@ import os
 import argparse
 import requests
 from glob import glob
+import StringIO
+import gzip
 
 commandline_parser = argparse.ArgumentParser(description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -30,8 +32,15 @@ def main(args):
         server = "http://localhost:5000/data"
         for file_name in file_names:
             raw_image = open(file_name, 'rb')
-            headers = {'content-type': 'application/json'}
-            requests.post(server, data={file_name: raw_image},
+            headers = {'content-encoding': 'gzip'}
+            stringio = StringIO.StringIO()
+            gzip_file = gzip.GzipFile(fileobj=stringio, mode='w')
+            gzip_file.write(os.path.abspath(file_name))
+            gzip_file.write("\n")
+            gzip_file.write(raw_image.read())
+            gzip_file.close()
+            requests.post(server,
+                    data=stringio.getvalue(),
                     headers=headers)
 
 if __name__ == '__main__':

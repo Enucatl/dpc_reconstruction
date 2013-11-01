@@ -9,10 +9,10 @@ import logging
 import traceback
 from glob import glob
 import os
+import urllib
 
 import numpy as np
 import pypes.component 
-import pypesvds.lib.packet
 
 #number of lines in a CCD FLI header
 _HEADER_LINES = 16
@@ -36,32 +36,26 @@ class FliRawReader(pypes.component.Component):
         
     def run(self):
         while True:
-            data = self.receive("in")
-            print(data.get_attributes().items())
-            folder = data.get('data')
-            if folder is None:
+            packet = self.receive("in")
+            data = packet.get('data')
+            packet.delete("data")
+            if data is None:
                 self.yield_ctrl()
                 continue
-            input_files = sorted(glob(
-                os.path.join(
-                    os.path.expanduser(folder),
-                    "*.raw")))
+            lines = data.splitlines()
+            file_name = lines[0]
             log.info("{0} is reading {1}".format(
-                self.__class__.__name__, folder))
-            for input_file in input_files:
-                try:
-                    packet = pypesvds.lib.packet.Packet()
-                    lines = open(input_file).readlines()
-                    packet.set("file_name", input_file)
-                    packet.set("header", lines[:_HEADER_LINES])
-                    #first byte of the last line is useless
-                    packet.set("image_data", lines[-1][1:])
-                    log.info("read file {0}".format(input_file))
-                except Exception as e:
-                    log.error('pypes.component.Component Failed: %s' % self.__class__.__name__)
-                    log.error('Reason: %s' % str(e))                    
-                    log.error(traceback.print_exc())
-                self.send("out", packet)
+                self.__class__.__name__, file_name))
+            try:
+                packet.set("file_name", file_name)
+                packet.set("header", lines[1:_HEADER_LINES + 1])
+                #first byte of the last line is useless
+                packet.set("image_data", lines[-1][1:])
+            except Exception as e:
+                log.error('pypes.component.Component Failed: %s' % self.__class__.__name__)
+                log.error('Reason: %s' % str(e))                    
+                log.error(traceback.print_exc())
+            self.send("out", packet)
             self.yield_ctrl()
 
 class FliRawHeaderAnalyzer(pypes.component.Component):
