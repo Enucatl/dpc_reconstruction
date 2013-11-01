@@ -22,6 +22,8 @@ class Hdf5Writer(pypes.component.Component):
 
     def __init__(self):
         pypes.component.Component.__init__(self)
+        # remove the output port since this is a publisher
+        self.remove_output('out')
         self.set_parameter("overwrite", False)
         log.info('pypes.component.Component Initialized: {0}'.format(
             self.__class__.__name__))
