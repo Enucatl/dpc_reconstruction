@@ -37,6 +37,7 @@ class FliRawReader(pypes.component.Component):
     def run(self):
         while True:
             data = self.receive("in")
+            print(data.get_attributes().items())
             folder = data.get('data')
             if folder is None:
                 self.yield_ctrl()

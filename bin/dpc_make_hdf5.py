@@ -4,18 +4,10 @@
 
 from __future__ import division, print_function
 
-import argparse
 import os
+import argparse
+import requests
 from glob import glob
-
-from pypes.pipeline import Dataflow
-from pypesvds.plugins.mergeoperator.mergeoperator import Merge
-
-from dpc_reconstruction.io.fliccd_hedpc import FliRawHeaderSplitter
-from dpc_reconstruction.io.fliccd_hedpc import FliRawHeaderAnalyzer
-from dpc_reconstruction.io.fliccd_hedpc import FliRaw2Numpy
-from dpc_reconstruction.io.fliccd_hedpc import Printer
-from dpc_reconstruction.io.hdf5 import Hdf5Publisher
 
 commandline_parser = argparse.ArgumentParser(description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -34,32 +26,13 @@ commandline_parser.add_argument('--jobs', '-j',
 
 def main(args):
     for folder in args.folder:
-        files = sorted(glob(os.path.join(folder, "*.raw")))
-        files = [open(file_name) for file_name in files]
-        header_splitter = FliRawHeaderSplitter(files)
-        header_analyzer = FliRawHeaderAnalyzer()
-        merger = Merge()
-        raw2numpy = FliRaw2Numpy()
-        printer = Printer()
-        hdf5publisher = Hdf5Publisher(args.overwrite)
-        network = {
-                header_splitter: {
-                    header_analyzer: ('header', 'in'),
-                    merger: ('out', 'in'),
-                    },
-                header_analyzer: {
-                    merger: ('out', 'in2'),
-                    },
-                merger: {
-                    raw2numpy: ('out', 'in'),
-                    },
-                raw2numpy: {
-                    hdf5publisher: ('out', 'in')
-                    },
-                }
-        pipe = Dataflow(network)
-        pipe.send(None)
-        pipe.close()
+        file_names = sorted(glob(os.path.join(folder, "*.raw")))
+        server = "http://localhost:5000/data"
+        for file_name in file_names:
+            raw_image = open(file_name, 'rb')
+            headers = {'content-type': 'application/json'}
+            requests.post(server, data={file_name: raw_image},
+                    headers=headers)
 
 if __name__ == '__main__':
     main(commandline_parser.parse_args())
