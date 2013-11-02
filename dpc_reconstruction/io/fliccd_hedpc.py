@@ -117,8 +117,9 @@ class FliRaw2Numpy(pypes.component.Component):
                     min_y = packet.get("min_y")
                     max_y = packet.get("max_y")
                     image = np.reshape(
-                            np.frombuffer(packet.get("image_data"), dtype=np.uint16),
-                            (max_y - min_y, max_x - min_x))
+                            np.fromstring(packet.get("image_data"), dtype=np.uint16),
+                            (max_y - min_y, max_x - min_x),
+                            order='F')
                     packet.delete("image_data") #remove binary data
                     packet.set("image", image)
                 except Exception as e:

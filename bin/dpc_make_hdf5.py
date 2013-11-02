@@ -6,10 +6,15 @@ from __future__ import division, print_function
 
 import os
 import argparse
-import requests
 from glob import glob
-import StringIO
-import gzip
+
+import pypes.pipeline
+
+from dpc_reconstruction.io.file_reader import FileReader
+from dpc_reconstruction.io.fliccd_hedpc import FliRawReader
+from dpc_reconstruction.io.fliccd_hedpc import FliRawHeaderAnalyzer
+from dpc_reconstruction.io.fliccd_hedpc import FliRaw2Numpy
+from dpc_reconstruction.io.hdf5 import Hdf5Writer
 
 commandline_parser = argparse.ArgumentParser(description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -26,22 +31,35 @@ commandline_parser.add_argument('--jobs', '-j',
         nargs='?', default=1, type=int,
         help='specifies the number of jobs running simultaneously.')
 
-def main(args):
-    for folder in args.folder:
+def main(folders, overwrite=False, jobs=1):
+    file_reader = FileReader()
+    fliraw_reader = FliRawReader()
+    header_analyzer = FliRawHeaderAnalyzer()
+    numpy_converter = FliRaw2Numpy()
+    hdf_writer = Hdf5Writer()
+    hdf_writer.set_parameter("overwrite", overwrite)
+    FliRawReader.__metatype__ = "TRANSFORMER"
+    network = {
+            file_reader: {
+                fliraw_reader: ('out', 'in'),
+                },
+            fliraw_reader: {
+                header_analyzer: ('out', 'in'),
+                },
+            header_analyzer: {
+                numpy_converter: ('out', 'in'),
+                },
+            numpy_converter: {
+                hdf_writer: ('out', 'in'),
+                },
+            }
+    pipeline = pypes.pipeline.Dataflow(network, n=jobs)
+    for folder in folders:
         file_names = sorted(glob(os.path.join(folder, "*.raw")))
-        server = "http://localhost:5000/data"
         for file_name in file_names:
-            raw_image = open(file_name, 'rb')
-            headers = {'content-encoding': 'gzip'}
-            stringio = StringIO.StringIO()
-            gzip_file = gzip.GzipFile(fileobj=stringio, mode='w')
-            gzip_file.write(os.path.abspath(file_name))
-            gzip_file.write("\n")
-            gzip_file.write(raw_image.read())
-            gzip_file.close()
-            requests.post(server,
-                    data=stringio.getvalue(),
-                    headers=headers)
-
+            pipeline.send(file_name)
+    pipeline.close()
+            
 if __name__ == '__main__':
-    main(commandline_parser.parse_args())
+    args = commandline_parser.parse_args()
+    main(args.folder, args.overwrite, args.jobs)
