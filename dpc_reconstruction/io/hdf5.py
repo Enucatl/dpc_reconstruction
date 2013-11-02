@@ -55,9 +55,8 @@ class Hdf5Writer(pypes.component.Component):
                         output_file[dataset_name].attrs[key] = value
                     output_file.close()
                 except Exception as e:
-                    log.error('pypes.component.Component Failed: %s' % self.__class__.__name__)
-                    log.error('Reason: %s' % str(e))                    
-                    log.error(traceback.print_exc())
+                    log.error('Component Failed: %s' % self.__class__.__name__,
+                            exc_info=True)
 
             # yield the CPU, allowing another component to run
             self.yield_ctrl()

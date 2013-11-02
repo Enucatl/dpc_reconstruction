@@ -61,5 +61,11 @@ def main(folders, overwrite=False, jobs=1):
     pipeline.close()
             
 if __name__ == '__main__':
+    import sys
+    import logging
+    import logging.config
+    from dpc_reconstruction.logger_config import config_dictionary
+    root_logger = logging.getLogger()
+    logging.config.dictConfig(config_dictionary)
     args = commandline_parser.parse_args()
     main(args.folder, args.overwrite, args.jobs)

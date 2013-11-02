@@ -6,7 +6,6 @@ HDF5 file.
 from __future__ import division, print_function 
 
 import logging
-import traceback
 from glob import glob
 import os
 import urllib
@@ -52,9 +51,8 @@ class FliRawReader(pypes.component.Component):
                 #first byte of the last line is useless
                 packet.set("image_data", lines[-1][1:])
             except Exception as e:
-                log.error('pypes.component.Component Failed: %s' % self.__class__.__name__)
-                log.error('Reason: %s' % str(e))                    
-                log.error(traceback.print_exc())
+                log.error('Component Failed: %s' % self.__class__.__name__,
+                        exc_info=True)
             self.send("out", packet)
             self.yield_ctrl()
 
@@ -86,9 +84,8 @@ class FliRawHeaderAnalyzer(pypes.component.Component):
                     packet.set("max_x", max_x)
                     packet.set("exposure_time", exposure_time)
                 except Exception as e:
-                    log.error('Component Failed: %s' % self.__class__.__name__)
-                    log.error('Reason: %s' % str(e))                    
-                    log.error(traceback.print_exc())
+                    log.error('Component Failed: %s' % self.__class__.__name__,
+                            exc_info=True)
                 # send the document to the next component
                 self.send("out", packet)
             # yield the CPU, allowing another component to run
@@ -123,9 +120,8 @@ class FliRaw2Numpy(pypes.component.Component):
                     packet.delete("image_data") #remove binary data
                     packet.set("image", image)
                 except Exception as e:
-                    log.error('Component Failed: %s' % self.__class__.__name__)
-                    log.error('Reason: %s' % str(e))                    
-                    log.error(traceback.print_exc())
+                    log.error('Component Failed: %s' % self.__class__.__name__,
+                            exc_info=True)
                 # send the document to the next component
                 self.send("out", packet)
             # yield the CPU, allowing another component to run

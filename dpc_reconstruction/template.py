@@ -36,9 +36,8 @@ class TemplateComponent(pypes.component.Component):
                     # perform your custom logic here
                     pass
                 except Exception as e:
-                    log.error('pypes.component.Component Failed: %s' % self.__class__.__name__)
-                    log.error('Reason: %s' % str(e))                    
-                    log.error(traceback.print_exc())
+                    log.error('Component Failed: %s' % self.__class__.__name__,
+                            exc_info=True)
 
                 # send the document to the next component
                 self.send('out', doc)
