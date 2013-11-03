@@ -21,8 +21,8 @@ log = logging.getLogger(__name__)
 class FliRawReader(pypes.component.Component):
 
     """Split the stream of binary data coming from the FLI CCD raw format
-    into three outputs: the filename (string), the header (binary) and the
-    image data (binary)."""
+    into three outputs: the filename, the header and the
+    image data."""
 
     __metatype__ = "ADAPTER"
 
@@ -30,7 +30,7 @@ class FliRawReader(pypes.component.Component):
         pypes.component.Component.__init__(self)
 
         # log successful initialization message
-        log.info('pypes.component.Component Initialized: {0}'.format(
+        log.debug('pypes.component.Component Initialized: {0}'.format(
             self.__class__.__name__))
         
     def run(self):
@@ -43,7 +43,7 @@ class FliRawReader(pypes.component.Component):
                 continue
             lines = data.splitlines()
             file_name = lines[0]
-            log.info("{0} is reading {1}".format(
+            log.debug("{0} is reading {1}".format(
                 self.__class__.__name__, file_name))
             try:
                 packet.set("file_name", file_name)
@@ -65,7 +65,7 @@ class FliRawHeaderAnalyzer(pypes.component.Component):
     def __init__(self):
         pypes.component.Component.__init__(self)
         # log successful initialization message
-        log.info('pypes.component.Component Initialized: {0}'.format(
+        log.debug('pypes.component.Component Initialized: {0}'.format(
             self.__class__.__name__))
         
     def run(self):
@@ -101,28 +101,29 @@ class FliRaw2Numpy(pypes.component.Component):
     def __init__(self):
         pypes.component.Component.__init__(self)
         # log successful initialization message
-        log.info('pypes.component.Component Initialized: {0}'.format(
+        log.debug('pypes.component.Component Initialized: {0}'.format(
             self.__class__.__name__))
 
     def run(self):
         while True:
-            packets = self.receive_all('in')
-            for packet in packets:
-                try:
-                    max_x = packet.get("max_x")
-                    min_x = packet.get("min_x")
-                    min_y = packet.get("min_y")
-                    max_y = packet.get("max_y")
-                    image = np.reshape(
-                            np.fromstring(packet.get("image_data"), dtype=np.uint16),
-                            (max_y - min_y, max_x - min_x),
-                            order='F')
-                    packet.delete("image_data") #remove binary data
-                    packet.set("image", image)
-                except Exception as e:
-                    log.error('Component Failed: %s' % self.__class__.__name__,
-                            exc_info=True)
-                # send the document to the next component
-                self.send("out", packet)
+            packet = self.receive('in')
+            try:
+                max_x = packet.get("max_x")
+                min_x = packet.get("min_x")
+                min_y = packet.get("min_y")
+                max_y = packet.get("max_y")
+                image = np.reshape(
+                        np.fromstring(packet.get("image_data"), dtype=np.uint16),
+                        (max_y - min_y, max_x - min_x),
+                        order='F')
+                log.debug("{0}: image with shape {1}".format(
+                    self.__class__.__name__, image.shape))
+                packet.delete("image_data") #remove binary data
+                packet.set("image", image)
+            except Exception as e:
+                log.error('Component Failed: %s' % self.__class__.__name__,
+                        exc_info=True)
+            # send the document to the next component
+            self.send("out", packet)
             # yield the CPU, allowing another component to run
             self.yield_ctrl()

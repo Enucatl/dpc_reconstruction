@@ -22,7 +22,7 @@ class TemplateComponent(pypes.component.Component):
         #self.set_parameter('MyParam', 'opt1', ['opt1', 'opt2', 'opt3'])
 
         # log successful initialization message
-        log.info('pypes.component.Component Initialized: %s' % self.__class__.__name__)
+        log.debug('pypes.component.Component Initialized: %s' % self.__class__.__name__)
 
     def run(self):
         # Define our components entry point

@@ -43,7 +43,7 @@ class FileReader(pypes.component.Component):
         pypes.component.Component.__init__(self)
         # remove the output port since this is a publisher
         self.set_parameter("mode", "rb")
-        log.info('pypes.component.Component Initialized: {0}'.format(
+        log.debug('pypes.component.Component Initialized: {0}'.format(
             self.__class__.__name__))
         
     def run(self):
@@ -57,11 +57,12 @@ class FileReader(pypes.component.Component):
                     raise OSError("file {0} not found!".format(
                         full_path))
                 data = full_path + "\n" + open(full_path, mode).read()
+                log.debug('{0} read file {1}'.format(
+                    self.__class__.__name__, full_path))
                 packet.set('data', data)
                 self.send('out', packet)
             except Exception as e:
                 log.error('Component Failed: %s' % self.__class__.__name__,
                         exc_info=True)
-
             # yield the CPU, allowing another component to run
             self.yield_ctrl()
