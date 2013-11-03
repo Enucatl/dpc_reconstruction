@@ -39,9 +39,13 @@ commandline_parser.add_argument('--verbose', '-v',
 commandline_parser.add_argument('--jobs', '-j',
         nargs='?', default=1, type=int,
         help='specifies the number of jobs running simultaneously.')
+commandline_parser.add_argument('--remove', '-r',
+        action='store_true',
+        help='remove the folder after converting the files.')
 
-def main(folders, overwrite=False, jobs=1):
+def main(folders, overwrite=False, jobs=1, remove_source=False):
     file_reader = FileReader()
+    file_reader.set_parameter("remove_source", remove_source)
     fliraw_reader = FliRawReader()
     header_analyzer = FliRawHeaderAnalyzer()
     numpy_converter = FliRaw2Numpy()
@@ -67,13 +71,13 @@ def main(folders, overwrite=False, jobs=1):
         if not os.path.exists(folder) or not os.path.isdir(folder):
             log.error("{0}: folder {1} not found!".format(
                 __name__, folder))
+            raise OSError
         file_names = sorted(glob(os.path.join(folder, "*.raw")))
         log.info("{0} {1}: converting {2} raw files.".format(
             __name__, get_git_version(), len(file_names)))
         for file_name in file_names:
             pipeline.send(file_name)
     pipeline.close()
-    log.info("{0}: done.".format(__name__))
             
 if __name__ == '__main__':
     import sys
@@ -82,4 +86,4 @@ if __name__ == '__main__':
         config_dictionary['handlers']['default']['level'] = 'DEBUG'
         config_dictionary['loggers']['']['level'] = 'DEBUG'
     logging.config.dictConfig(config_dictionary)
-    main(args.folder, args.overwrite, args.jobs)
+    main(args.folder, args.overwrite, args.jobs, args.remove)
