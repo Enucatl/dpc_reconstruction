@@ -24,7 +24,8 @@ class Hdf5Writer(pypes.component.Component):
         pypes.component.Component.__init__(self)
         # remove the output port since this is a publisher
         self.remove_output('out')
-        self.set_parameter("overwrite", False)
+        self.set_parameter("overwrite", False) #overwrite existing datasets
+        self.set_parameter("group", "/") #group inside the hdf file
         log.debug('pypes.component.Component Initialized: {0}'.format(
             self.__class__.__name__))
         
@@ -37,21 +38,23 @@ class Hdf5Writer(pypes.component.Component):
                 folder_name, tail_name = os.path.split(file_name)
                 output_name = folder_name + ".hdf5"
                 output_file = h5py.File(output_name)
+                output_group = output_file[self.get_parameter("group")]
                 dataset_name = os.path.splitext(tail_name)[0]
-                if dataset_name in output_file and overwrite:
-                    del output_file[dataset_name]
-                elif dataset_name in output_file and not overwrite:
+                if dataset_name in output_group and overwrite:
+                    del output_group[dataset_name]
+                elif dataset_name in output_group and not overwrite:
                     log.debug("{0}: dataset {1} exists, not overwriting".format(
                         self.__class__.__name__, dataset_name))
                     output_file.close()
                     self.yield_ctrl()
                     continue
-                output_file[dataset_name] = packet.get("image")
+                output_group[dataset_name] = packet.get("image")
                 packet.delete("image")
                 log.debug("{0}: written dataset {1} in file {2}".format(
-                    self.__class__.__name__, dataset_name, output_name))
+                    self.__class__.__name__, dataset_name,
+                    os.path.join(output_name, self.get_parameter("group"))))
                 for key, value in packet.get_attributes().iteritems():
-                    output_file[dataset_name].attrs[key] = value
+                    output_group[dataset_name].attrs[key] = value
                 output_file.close()
             except Exception as e:
                 log.error('Component Failed: %s' % self.__class__.__name__,
