@@ -5,23 +5,53 @@ use_setuptools()
 
 from setuptools import setup, find_packages
 from version import get_git_version
+from subprocess import check_output
+
+def get_entry_points():
+    """Get the names of all the classes inheriting from
+    pypes.component.Component with some recursive grep magic.
+
+    This is useful for installing the python egg for pypesvds so that the
+    components can be used with the gui server.
+
+    """
+    command = r'''grep -rI "class \(.*\)(pypes.component.Component):" dpc_reconstruction | sed 's/.py:class /:/' | sed 's:/:.:g' | sed 's/(pypes.component.Component)://' | sed 's/\(.*\):\(.*\)/\2 = \1:\2/' '''
+    result = check_output(command, shell=True)
+    print(result)
+    ini_config = '''
+        [pypesvds.plugins] 
+{0}
+        [distutils.setup_keywords]
+        paster_plugins = setuptools.dist:assert_string_list
+  
+        [egg_info.writers]
+        paster_plugins.txt = setuptools.command.egg_info:write_arg
+    '''.format(result)
+    print(ini_config)
+    return ini_config
+
 
 setup(
-    name = "DPCReconstruction",
+    name = "dpc_reconstruction",
     version = get_git_version(),
     packages = find_packages(exclude='test'),
     scripts = [
+        "bin/dpc_make_hdf5.py",
         ],
 
     install_requires = [
-        'h5py',
         'numpy',
+        'h5py',
+        'pypes',
+        'pypesvds',
         ],
 
     package_data = {
         # If any package contains *.txt or *.rst files, include them:
         '': ['*.txt', '*.rst'],
     },
+    
+    entry_points = get_entry_points(), 
 
     # metadata for upload to PyPI
     author = "TOMCAT DPC group",
