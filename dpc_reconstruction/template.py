@@ -5,6 +5,21 @@ import pypes.component
 log = logging.getLogger(__name__)
 
 class TemplateComponent(pypes.component.Component):
+    """
+    mandatory input packet attributes:
+        - att1:
+
+    optional input packet attributes:
+        - opt: 
+
+    parameters:
+        - par1: [default: blah] 
+
+    output packet attributes:
+        - output attribute:
+
+    """
+
     # defines the type of component we're creating.
     __metatype__ = 'TRANSFORMER'
 

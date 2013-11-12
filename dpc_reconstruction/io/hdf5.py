@@ -16,7 +16,25 @@ log = logging.getLogger(__name__)
 
 class Hdf5Writer(pypes.component.Component):
 
-    """Output an image to HDF5, with all of its metadata."""
+    """Output an image to HDF5, with all of its metadata.
+    
+    mandatory input packet attributes:
+        - full_path: path of the original raw file, used to calculate the
+          hdf5 path and the name of the dataset
+        - image: containing the image as a numpy array
+
+    optional input packet attributes:
+        - any: will be added as attributes for the hdf5 Dataset
+
+    parameters:
+        - overwrite: [default: False] overwrite the dataset if it already
+          exists in the hdf5 file
+        - group: [default: /] h5 Group used to store the datasets
+
+    output:
+        - None, writes to disk
+        
+    """
 
     __metatype__ = "PUBLISHER"
 
@@ -34,7 +52,7 @@ class Hdf5Writer(pypes.component.Component):
             overwrite = self.get_parameter("overwrite")
             packet = self.receive("in")
             try:
-                file_name = packet.get("file_name")
+                file_name = packet.get("full_path")
                 folder_name, tail_name = os.path.split(file_name)
                 output_name = folder_name + ".hdf5"
                 output_file = h5py.File(output_name)
@@ -63,7 +81,21 @@ class Hdf5Writer(pypes.component.Component):
             self.yield_ctrl()
 
 class Hdf5Reader(pypes.component.Component):
-    # send all the datasets in a group together
+    """
+    Read all the datasets in a h5py.Group.
+    The files are stored in self.files so that they are not prematurely
+    garbage collected.
+    
+    mandatory input (not a packet):
+        - file_name: path of the hdf5 file
+
+    parameters:
+        - group: [default: /] h5 Group to be read
+
+    output packet attributes:
+        - data: the list of h5py.Datasets read from the file
+        
+    """
 
     __metatype__ = 'ADAPTER'
 
@@ -71,13 +103,6 @@ class Hdf5Reader(pypes.component.Component):
         # initialize parent class
         pypes.component.Component.__init__(self)
         
-        # Optionally add/remove component ports
-        # self.remove_output('out')
-        # self.add_input('in2', 'A description of what this port is used for')
-
-        # Setup any user parameters required by this component 
-        # 2nd arg is the default value, 3rd arg is optional list of choices
-        #self.set_parameter('MyParam', 'opt1', ['opt1', 'opt2', 'opt3'])
         #read all the datasets in this group
         self.set_parameter("group", "/")
 

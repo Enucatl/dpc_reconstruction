@@ -1,6 +1,5 @@
 """
-Read the RAW images saved by the CCDFLI camera and merge them into a single
-HDF5 file.
+Read the RAW images saved by the CCD FLI camera in OFLG/U210
 """
 
 from __future__ import division, print_function 
@@ -20,9 +19,22 @@ log = logging.getLogger(__name__)
 
 class FliRawReader(pypes.component.Component):
 
-    """Split the stream of binary data coming from the FLI CCD raw format
-    into three outputs: the filename, the header and the
-    image data."""
+    """
+    
+    mandatory input packet attributes:
+        - data: the binary contents of the file
+
+    optional input packet attributes:
+        - None
+
+    parameters:
+        - None
+
+    output packet attributes:
+        - data: raw binary string containing only the image data
+          (dtype=uint16), without the header
+        - header: string containing the header only
+    """
 
     __metatype__ = "ADAPTER"
 
@@ -37,19 +49,16 @@ class FliRawReader(pypes.component.Component):
         while True:
             packet = self.receive("in")
             data = packet.get('data')
-            packet.delete("data")
             if data is None:
                 self.yield_ctrl()
                 continue
             lines = data.splitlines()
-            file_name = lines[0]
             log.debug("{0} is reading {1}".format(
                 self.__class__.__name__, file_name))
             try:
-                packet.set("file_name", file_name)
-                packet.set("header", lines[1:_HEADER_LINES + 1])
+                packet.set("header", lines[:_HEADER_LINES])
                 #first byte of the last line is useless
-                packet.set("image_data", lines[-1][1:])
+                packet.set("data", lines[-1][1:])
             except Exception as e:
                 log.error('Component Failed: %s' % self.__class__.__name__,
                         exc_info=True)
@@ -58,7 +67,25 @@ class FliRawReader(pypes.component.Component):
 
 class FliRawHeaderAnalyzer(pypes.component.Component):
 
-    """Analyze the header and get the metadata for the picture."""
+    """Analyze the header and get the metadata for the picture.
+    
+    mandatory input packet attributes:
+        - header: string with the header of the raw file
+
+    optional input packet attributes:
+        - None 
+
+    parameters:
+        - None
+
+    output packet attributes:
+        - min_y: ...
+        - max_y: ...
+        - min_x: ...
+        - max_x: ROI limits (pixel numbers)
+        - exposure_time: exposure time as saved by the camera
+    
+    """
 
     __metatype__ = "TRANSFORMER"
 
@@ -93,8 +120,26 @@ class FliRawHeaderAnalyzer(pypes.component.Component):
 
 class FliRaw2Numpy(pypes.component.Component):
 
-    """Get the header information merged with the binary image, and pass the
-    latter in numpy format."""
+    """Get the header information and the binary raw image, and convert the
+    latter to a numpy array.
+    
+    mandatory input packet attributes:
+        - data: the image raw binary string
+        - min_y: ...
+        - max_y: ...
+        - min_x: ...
+        - max_x: ROI limits (pixel numbers)
+
+    optional input packet attributes:
+        - None
+
+    parameters:
+        - None
+
+    output packet attributes:
+        - data: the image as a 2D numpy array
+
+    """
 
     __metatype__ = "TRANSFORMER"
 
@@ -113,13 +158,12 @@ class FliRaw2Numpy(pypes.component.Component):
                 min_y = packet.get("min_y")
                 max_y = packet.get("max_y")
                 image = np.reshape(
-                        np.fromstring(packet.get("image_data"), dtype=np.uint16),
+                        np.fromstring(packet.get("data"), dtype=np.uint16),
                         (max_y - min_y, max_x - min_x),
                         order='F')
                 log.debug("{0}: image with shape {1}".format(
                     self.__class__.__name__, image.shape))
-                packet.delete("image_data") #remove binary data
-                packet.set("image", image)
+                packet.set("data", image)
             except Exception as e:
                 log.error('Component Failed: %s' % self.__class__.__name__,
                         exc_info=True)
