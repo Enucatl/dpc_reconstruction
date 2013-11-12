@@ -21,7 +21,7 @@ class Hdf5Writer(pypes.component.Component):
     mandatory input packet attributes:
         - full_path: path of the original raw file, used to calculate the
           hdf5 path and the name of the dataset
-        - image: containing the image as a numpy array
+        - data: containing the image as a numpy array
 
     optional input packet attributes:
         - any: will be added as attributes for the hdf5 Dataset
@@ -66,11 +66,11 @@ class Hdf5Writer(pypes.component.Component):
                     output_file.close()
                     self.yield_ctrl()
                     continue
-                output_group[dataset_name] = packet.get("image")
-                packet.delete("image")
-                log.debug("{0}: written dataset {1} in file {2}".format(
+                output_group[dataset_name] = packet.get("data")
+                packet.delete("data")
+                log.debug("{0}: written dataset {1} to file {2} group {3}".format(
                     self.__class__.__name__, dataset_name,
-                    os.path.join(output_name, self.get_parameter("group"))))
+                    output_name, self.get_parameter("group")))
                 for key, value in packet.get_attributes().iteritems():
                     output_group[dataset_name].attrs[key] = value
                 output_file.close()
@@ -145,4 +145,6 @@ class Hdf5Reader(pypes.component.Component):
     def __del__(self):
         """close files when the reference count is 0."""
         for f in self.files:
+            log.debug('{0} closing file {1}'.format(
+                self.__class__.__name__, len(f.filename)))
             f.close()

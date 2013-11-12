@@ -53,8 +53,8 @@ class FliRawReader(pypes.component.Component):
                 self.yield_ctrl()
                 continue
             lines = data.splitlines()
-            log.debug("{0} is reading {1}".format(
-                self.__class__.__name__, file_name))
+            log.debug("{0} is reading".format(
+                self.__class__.__name__))
             try:
                 packet.set("header", lines[:_HEADER_LINES])
                 #first byte of the last line is useless
