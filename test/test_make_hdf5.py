@@ -2,100 +2,64 @@
 
 """
 
-import h5py
-import os
-from glob import glob
-import numpy as np
-import sys
-import time
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../bin")))
+import pytest
+import stackless
 
-from dpc_make_hdf5 import main
-from itertools import islice
+import pypes.component
+import pypes.pipeline
 
-FOLDER = ["fliccd_data"]
-PROGRAMME = "dpc_make_hdf5.py"
-OUTPUT_FILE = FOLDER[0] + ".hdf5"
+from dpc_reconstruction.io.file_reader import FileReader
 
-_HEADER_LINES = 16
+class PublisherTest(pypes.component.Component):
+    # defines the type of component we're creating.
+    __metatype__ = 'PUBLISHER'
 
-def _analyse_header(input_file_name):
-    """Analyse a CCD FLI header in a RAW file
+    def __init__(self):
+        # initialize parent class
+        pypes.component.Component.__init__(self)
+        
+        self.set_parameter("attribute_name", "data")
+        # Optionally add/remove component ports
+        self.remove_output('out')
 
-    Return the bytes in the header, exposure, min_x, max_x, min_y, max_y.
+    def run(self):
+        # Define our components entry point
+        while True:
+            # for each packet waiting on our input port
+            attribute_name = self.get_parameter("attribute_name")
+            packet = self.receive('in')
+            self.result = packet.get(attribute_name)
+            # yield the CPU, allowing another component to run
+            assert 0
+            self.yield_ctrl()
+
+@pytest.fixture(scope="function")
+def pipeline_and_publisher(request):
+    """Build a mini pipeline to test one component at a time.
+    The component is passed by adding it as an attribute to the test
+    function.
 
     """
-    input_file = open(input_file_name, 'rb')
-    header = list(islice(input_file, _HEADER_LINES))
-    header_len = len("".join(header))
-    exposure_time = float(header[4].split()[-1])
-    min_y, min_x, max_y, max_x = [
-            int(x) for x in header[-2].split()[2:]]
-    input_file.close()
-    return header_len, exposure_time, min_x, max_x, min_y, max_y
-
-def _read_data(input_file_name):
-    """Read a single image into a numpy array,
-    shaped according to the header."""
-    (header_len, _,
-                    min_x, max_x, 
-                    min_y, max_y) = _analyse_header(input_file_name)
-    input_file = open(input_file_name, 'rb')
-    input_file.read(header_len + 1)
-    image = np.reshape(
-            np.fromfile(input_file, dtype=np.uint16),
-            (max_y - min_y, max_x - min_x),
-            order='F')
-    input_file.close()
-    return image
-
-class TestMakeHdf5(object):
-    """Tests:
-        - header analysis
-        - file creation
-        - file content
-        - overwrite flag.
-        
-        """
-
-    def test_file_content(self):
-        """Test that the file contains the same data as the original raw
-        file.
-
-        """
-        main(FOLDER, overwrite=True)
-        h5_file = h5py.File(OUTPUT_FILE, "r")
-        for i, input_file_name in enumerate(
-                sorted(glob("fliccd_data/*.raw"))):
-            image = _read_data(input_file_name)
-            key = os.path.splitext(
-                    os.path.basename(
-                        input_file_name))[0]
-            hdf5_data = h5_file[key][...]
-            print(i, input_file_name, key)
-            print(hdf5_data.shape, image.shape)
-            assert hdf5_data.shape == image.shape
-            #assert header_len == 340
-            #assert exposure_time == 5
-            #assert min_x == 4
-            #assert max_x == 1028
-            #assert min_y == 500
-            #assert max_y == 560
-            assert (hdf5_data[0, :] == image[0, :]).all()
-            assert (hdf5_data == image).all()
-        h5_file.close()
+    component = request.function.component
+    publisher = PublisherTest()
+    network = {
+            component: {
+                publisher: ("out", "in")
+                }
+            }
+    pipeline = pypes.pipeline.Dataflow(network)
+    def fin():
+        pipeline.close()
+    request.addfinalizer(fin)
+    return pipeline, publisher
     
-    def test_overwrite(self):
-        """Test the overwrite flag.
+@pytest.mark.usefixtures("pipeline_and_publisher")
+class TestMakeHdf5(object):
+    """Test all the components of the make hdf5 pipeline."""
 
-        """
-        main(FOLDER, overwrite=True)
-        date_created = os.path.getmtime(OUTPUT_FILE)
-        main(FOLDER)
-        date_created2 = os.path.getmtime(OUTPUT_FILE)
-        """Check that it was not overwritten."""
-        assert date_created <= date_created2
-        """Check that it was overwritten."""
-        main(FOLDER, overwrite=True)
-        date_created3 = os.path.getctime(OUTPUT_FILE)
-        assert date_created3 > date_created
+    def test_file_reader(self, pipeline_and_publisher):
+        expected_output = 0
+        pipeline, publisher = pipeline_and_publisher
+        publisher.set_parameter("attribute_name", "data")
+        pipeline.send("fliccd_data/ccdimage_00045_00000_00.raw")
+    test_file_reader.component = FileReader()
