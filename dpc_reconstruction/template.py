@@ -1,5 +1,4 @@
 import logging
-import traceback
 
 import pypes.component
 
@@ -30,8 +29,8 @@ class TemplateComponent(pypes.component.Component):
 
             # myparam = self.get_parameter('MyParam')             
 
-            # for each document waiting on our input port
-            for doc in self.receive_all('in'):
+            # for each packet waiting on our input port
+            for packet in self.receive_all('in'):
                 try:
                     # perform your custom logic here
                     pass
@@ -39,9 +38,8 @@ class TemplateComponent(pypes.component.Component):
                     log.error('Component Failed: %s' % self.__class__.__name__,
                             exc_info=True)
 
-                # send the document to the next component
-                self.send('out', doc)
+                # send the packet to the next component
+                self.send('out', packet)
 
             # yield the CPU, allowing another component to run
             self.yield_ctrl()
-

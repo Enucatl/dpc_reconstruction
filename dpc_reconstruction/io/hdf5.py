@@ -61,3 +61,63 @@ class Hdf5Writer(pypes.component.Component):
                         exc_info=True)
             # yield the CPU, allowing another component to run
             self.yield_ctrl()
+
+class Hdf5Reader(pypes.component.Component):
+    # send all the datasets in a group together
+
+    __metatype__ = 'ADAPTER'
+
+    def __init__(self):
+        # initialize parent class
+        pypes.component.Component.__init__(self)
+        
+        # Optionally add/remove component ports
+        # self.remove_output('out')
+        # self.add_input('in2', 'A description of what this port is used for')
+
+        # Setup any user parameters required by this component 
+        # 2nd arg is the default value, 3rd arg is optional list of choices
+        #self.set_parameter('MyParam', 'opt1', ['opt1', 'opt2', 'opt3'])
+        #read all the datasets in this group
+        self.set_parameter("group", "/")
+
+        #store files so that they are not garbage collected
+        self.files = []
+
+        # log successful initialization message
+        log.debug('pypes.component.Component Initialized: %s' % self.__class__.__name__)
+
+    def run(self):
+        # Define our components entry point
+        while True:
+            # for each file name string waiting on our input port
+            file_names = self.receive_all('in')
+            datasets = []
+            group_name = self.get_parameter("group")
+            packet = pypesvds.lib.packet.Packet()
+            for file_name in file_names:
+                try:
+                    input_file = h5py.File(file_name)
+                    output_group = output_file[group_name]
+                    log.debug('{0} read file {1}'.format(
+                        self.__class__.__name__, file_name))
+                    #save files so that they are not garbage collected
+                    self.files.append(input_file)
+                    datasets.extend([dataset
+                            for dataset in output_group.itervalues()
+                            if isinstance(dataset, h5py.Dataset)])
+                    log.debug('{0} found {1} datasets'.format(
+                        self.__class__.__name__, len(datasets)))
+                except Exception as e:
+                    log.error('Component Failed: %s' % self.__class__.__name__,
+                            exc_info=True)
+            packet.set("data", datasets)
+            # send the packet to the next component
+            self.send('out', packet)
+            # yield the CPU, allowing another component to run
+            self.yield_ctrl()
+
+    def __del__(self):
+        """close files when the reference count is 0."""
+        for f in self.files:
+            f.close()
