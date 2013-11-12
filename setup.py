@@ -8,6 +8,13 @@ from version import get_git_version
 from subprocess import check_output
 
 def get_entry_points():
+    """Get the names of all the classes inheriting from
+    pypes.component.Component with some recursive grep magic.
+
+    This is useful for installing the python egg for pypesvds so that the
+    components can be used with the gui server.
+
+    """
     command = r'''grep -rI "class \(.*\)(pypes.component.Component):" dpc_reconstruction | sed 's/.py:class /:/' | sed 's:/:.:g' | sed 's/(pypes.component.Component)://' | sed 's/\(.*\):\(.*\)/\2 = \1:\2/' '''
     result = check_output(command, shell=True)
     print(result)
