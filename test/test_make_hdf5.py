@@ -9,19 +9,14 @@ How to write a test function:
 - write all the needed assertions on the results
 - after the function, set the component to be tested with
 test_method.component = Component
-The class name can be automatically discovered if the test function is
-properly named:
-    test_class_name will instatiate a ClassName object
 """
 
 import pytest
-import stackless
 import numpy as np
 import h5py
+import os
 
 import pypes.component
-import pypes.pype
-import pypesvds.lib.packet
 
 from dpc_reconstruction.io.file_reader import FileReader
 from dpc_reconstruction.io.hdf5 import Hdf5Writer
@@ -45,6 +40,7 @@ class TestMakeHdf5(object):
         data = pype.recv()
         assert data.get("data") == open(input_file_name, "rb").read()
         assert data.get("full_path") == os.path.abspath(input_file_name)
+    test_file_reader.component = FileReader
 
     @pytest.mark.parametrize("input_file_name", TEST_INPUT_FILES)
     def test_hdf5_writer(self, pype_and_tasklet,
@@ -64,6 +60,7 @@ class TestMakeHdf5(object):
                 component.get_parameter("group")]
         assert (output_group[dataset_name][...] == random_image).all()
         assert not packet.has("data")
+    test_hdf5_writer.component = Hdf5Writer
 
     @pytest.mark.parametrize("input_file_name", TEST_INPUT_FILES)
     def test_fli_raw_reader(self, pype_and_tasklet,
@@ -76,6 +73,7 @@ class TestMakeHdf5(object):
         output = pype.recv()
         assert output.get("header") == content.splitlines()[:16]
         assert output.get("data") == content.splitlines()[-1][1:]
+    test_fli_raw_reader.component = FliRawReader
 
     @pytest.mark.parametrize("input_file_name", TEST_INPUT_FILES)
     def test_fli_raw_header_analyzer(self, pype_and_tasklet,
@@ -92,6 +90,7 @@ class TestMakeHdf5(object):
         assert output.get("max_x") == 1028
         assert output.get("max_y") == 560
         assert output.get("exposure_time") == 5
+    test_fli_raw_header_analyzer.component = FliRawHeaderAnalyzer
 
     @pytest.mark.parametrize("tries", range(5))
     def test_fli_raw_2_numpy(self, pype_and_tasklet,
@@ -107,3 +106,4 @@ class TestMakeHdf5(object):
         tasklet.run()
         output = pype.recv()
         assert (output.get("data") == random_image).all()
+    test_fli_raw_2_numpy.component = FliRaw2Numpy

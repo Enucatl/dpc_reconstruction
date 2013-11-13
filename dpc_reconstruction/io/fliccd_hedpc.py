@@ -97,7 +97,6 @@ class FliRawHeaderAnalyzer(pypes.component.Component):
         
     def run(self):
         while True:
-            print("runnnnnnnnn")
             packets = self.receive_all('in')
             for packet in packets:
                 try:
@@ -111,8 +110,8 @@ class FliRawHeaderAnalyzer(pypes.component.Component):
                     packet.set("min_x", min_x)
                     packet.set("max_x", max_x)
                     packet.set("exposure_time", exposure_time)
-                    log.debug("{0} {1}".format(
-                        self.__class__.__name__, packet.get_attributes()))
+                    log.debug("{0} read header".format(
+                        self.__class__.__name__))
                 except Exception as e:
                     log.error('Component Failed: %s' % self.__class__.__name__,
                             exc_info=True)
