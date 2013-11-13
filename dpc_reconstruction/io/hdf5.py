@@ -11,6 +11,7 @@ import h5py
 import os
 
 import pypes.component 
+import pypesvds.lib.packet
 
 log = logging.getLogger(__name__)
 
@@ -56,7 +57,8 @@ class Hdf5Writer(pypes.component.Component):
                 folder_name, tail_name = os.path.split(file_name)
                 output_name = folder_name + ".hdf5"
                 output_file = h5py.File(output_name)
-                output_group = output_file[self.get_parameter("group")]
+                output_group = output_file.require_group(
+                        self.get_parameter("group"))
                 dataset_name = os.path.splitext(tail_name)[0]
                 if dataset_name in output_group and overwrite:
                     del output_group[dataset_name]
@@ -93,7 +95,8 @@ class Hdf5Reader(pypes.component.Component):
         - group: [default: /] h5 Group to be read
 
     output packet attributes:
-        - data: the list of h5py.Datasets read from the file
+        - file_names: the list of the paths of the input files
+        - data: the list of h5py.Datasets read from the file(s)
         
     """
 
@@ -116,20 +119,20 @@ class Hdf5Reader(pypes.component.Component):
         # Define our components entry point
         while True:
             # for each file name string waiting on our input port
-            file_names = self.receive_all('in')
+            file_names = list(self.receive_all('in'))
             datasets = []
             group_name = self.get_parameter("group")
             packet = pypesvds.lib.packet.Packet()
             for file_name in file_names:
                 try:
                     input_file = h5py.File(file_name)
-                    output_group = output_file[group_name]
+                    input_group = input_file[group_name]
                     log.debug('{0} read file {1}'.format(
                         self.__class__.__name__, file_name))
                     #save files so that they are not garbage collected
                     self.files.append(input_file)
                     datasets.extend([dataset
-                            for dataset in output_group.itervalues()
+                            for dataset in input_group.itervalues()
                             if isinstance(dataset, h5py.Dataset)])
                     log.debug('{0} found {1} datasets'.format(
                         self.__class__.__name__, len(datasets)))
@@ -137,6 +140,7 @@ class Hdf5Reader(pypes.component.Component):
                     log.error('Component Failed: %s' % self.__class__.__name__,
                             exc_info=True)
             packet.set("data", datasets)
+            packet.set("file_names", file_names)
             # send the packet to the next component
             self.send('out', packet)
             # yield the CPU, allowing another component to run
@@ -146,5 +150,5 @@ class Hdf5Reader(pypes.component.Component):
         """close files when the reference count is 0."""
         for f in self.files:
             log.debug('{0} closing file {1}'.format(
-                self.__class__.__name__, len(f.filename)))
+                self.__class__.__name__, f.filename))
             f.close()

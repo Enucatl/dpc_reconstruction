@@ -2,14 +2,30 @@
 
 """
 
+from __future__ import division, print_function
+
 import logging
+import numpy as np
 
 import pypes.component
 
 log = logging.getLogger(__name__)
 
-class DatasetStacker(pypes.component.Component):
-    # stacks all the 2d dataset into a single 3d dataset with numpy.dstack
+class Stacker(pypes.component.Component):
+    """
+    mandatory input packet attributes:
+        - data: list of h5py.Dataset or numpy arrays
+
+    optional input packet attributes:
+        - None
+
+    parameters:
+        - None
+
+    output packet attributes:
+        - data: a numpy array with the input datasets stacked along the last
+          axis.
+    """
     __metatype__ = 'TRANSFORMER'
 
     def __init__(self):
@@ -25,10 +41,13 @@ class DatasetStacker(pypes.component.Component):
             # for each packet waiting on our input port
             packet = self.receive('in')
             try:
-                data = np.dstack([dataset for dataset in packet.get('data')])
+                datasets = [dataset for dataset in packet.get('data')]
+                log.debug('{0} datasets[0] found with shape {1}'.format(
+                    self.__class__.__name__, datasets[0].shape))
+                data = np.dstack(datasets)
                 packet.set('data', data)
-                log.debug('{0} dataset shape {1}'.format(
-                    self.__class__.__name__, dataset.shape))
+                log.debug('{0} dataset created with shape {1}'.format(
+                    self.__class__.__name__, data.shape))
             except Exception as e:
                 log.error('Component Failed: %s' % self.__class__.__name__,
                         exc_info=True)
