@@ -1,6 +1,6 @@
 """Test the make_hdf5.py script.
 
-How to write a test function.
+How to write a test function:
 
 - use the pype_and_tasklet fixture to get a pype and a tasklet
 - send the input with pype.send
@@ -9,13 +9,13 @@ How to write a test function.
 - write all the needed assertions on the results
 - after the function, set the component to be tested with
 test_method.component = Component
-
+The class name can be automatically discovered if the test function is
+properly named:
+    test_class_name will instatiate a ClassName object
 """
 
 import pytest
 import stackless
-import os
-from glob import glob
 import numpy as np
 import h5py
 
@@ -25,56 +25,35 @@ import pypesvds.lib.packet
 
 from dpc_reconstruction.io.file_reader import FileReader
 from dpc_reconstruction.io.hdf5 import Hdf5Writer
+from dpc_reconstruction.io.fliccd_hedpc import FliRawReader
+from dpc_reconstruction.io.fliccd_hedpc import FliRawHeaderAnalyzer
+from dpc_reconstruction.io.fliccd_hedpc import FliRaw2Numpy
 
-TEST_DATA_FOLDER = "fliccd_data"
+from conftest import TEST_INPUT_FILES
 
-@pytest.fixture(scope="function")
-def pype_and_tasklet(request):
-    """Build pypes to send input and get output from one component at a time.
-    The component class name is passed by adding it as an attribute to the test
-    function.
-
-    """
-    component = request.function.component()
-    pype = pypes.pype.Pype()
-    component.connect_input("in", pype)
-    if component.has_port("out"):
-        component.connect_output("out", pype)
-    tasklet = stackless.tasklet(component.run)()
-    return pype, tasklet, component
-
-@pytest.fixture(scope="function")
-def packet():
-    return pypesvds.lib.packet.Packet()
-
-    
 @pytest.mark.usefixtures("packet")
 @pytest.mark.usefixtures("pype_and_tasklet")
 class TestMakeHdf5(object):
     """Test all the components of the make hdf5 pipeline."""
 
-    @pytest.mark.parametrize("input_file_name",
-            glob(os.path.join(TEST_DATA_FOLDER, "*.raw")))
+    @pytest.mark.parametrize("input_file_name", TEST_INPUT_FILES)
     def test_file_reader(self, pype_and_tasklet,
             input_file_name):
         pype, tasklet, _ = pype_and_tasklet
         pype.send(input_file_name)
         tasklet.run()
         data = pype.recv()
-        assert data.get("data") == open(input_file_name).read()
+        assert data.get("data") == open(input_file_name, "rb").read()
         assert data.get("full_path") == os.path.abspath(input_file_name)
 
-    test_file_reader.component = FileReader
-
-    @pytest.mark.parametrize("input_file_name",
-            glob(os.path.join(TEST_DATA_FOLDER, "*.raw")))
+    @pytest.mark.parametrize("input_file_name", TEST_INPUT_FILES)
     def test_hdf5_writer(self, pype_and_tasklet,
             packet, input_file_name):
         pype, tasklet, component = pype_and_tasklet
         component.set_parameter("overwrite", True)
         random_image = np.random.rand(5, 25)
         packet.set("full_path", input_file_name)
-        packet.set("image", random_image)
+        packet.set("data", random_image)
         pype.send(packet)
         tasklet.run()
         output_hdf5, dataset_name = os.path.split(input_file_name)
@@ -84,8 +63,47 @@ class TestMakeHdf5(object):
         output_group = output_file[
                 component.get_parameter("group")]
         assert (output_group[dataset_name][...] == random_image).all()
-        assert not packet.has("image")
+        assert not packet.has("data")
 
-    test_hdf5_writer.component = Hdf5Writer
+    @pytest.mark.parametrize("input_file_name", TEST_INPUT_FILES)
+    def test_fli_raw_reader(self, pype_and_tasklet,
+            packet, input_file_name):
+        pype, tasklet, _ = pype_and_tasklet
+        content = open(input_file_name, "rb").read()
+        packet.set("data", content)
+        pype.send(packet)
+        tasklet.run()
+        output = pype.recv()
+        assert output.get("header") == content.splitlines()[:16]
+        assert output.get("data") == content.splitlines()[-1][1:]
 
+    @pytest.mark.parametrize("input_file_name", TEST_INPUT_FILES)
+    def test_fli_raw_header_analyzer(self, pype_and_tasklet,
+            packet, input_file_name):
+        pype, tasklet, _ = pype_and_tasklet
+        header = open(input_file_name, "rb").readlines()[:16]
+        #header = "".join(header)
+        packet.set("header", header)
+        pype.send(packet)
+        tasklet.run()
+        output = pype.recv()
+        assert output.get("min_y") == 500
+        assert output.get("min_x") == 4
+        assert output.get("max_x") == 1028
+        assert output.get("max_y") == 560
+        assert output.get("exposure_time") == 5
 
+    @pytest.mark.parametrize("tries", range(5))
+    def test_fli_raw_2_numpy(self, pype_and_tasklet,
+            packet, tries):
+        pype, tasklet, _ = pype_and_tasklet
+        random_image = np.random.randint(5, 25, (10, 10)).astype(np.uint16)
+        packet.set("min_x", 0)
+        packet.set("max_x", 10)
+        packet.set("max_y", 10)
+        packet.set("min_y", 0)
+        packet.set("data", random_image.tostring(order="F"))
+        pype.send(packet)
+        tasklet.run()
+        output = pype.recv()
+        assert (output.get("data") == random_image).all()
