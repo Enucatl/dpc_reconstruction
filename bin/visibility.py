@@ -14,8 +14,6 @@ log = logging.getLogger()
 
 import pypes.pipeline
 
-from pypesvds.plugins.splitoperator.splitoperator import Split
-from dpc_reconstruction.io.plots import VisibilityPlotter
 from dpc_reconstruction.io.hdf5 import Hdf5Reader
 from dpc_reconstruction.stackers import Stacker
 from dpc_reconstruction.phase_stepping import FourierAnalyzer
@@ -69,6 +67,8 @@ def main(file_names, overwrite=False, jobs=1,
                 },
             }
     if not batch:
+        from pypesvds.plugins.splitoperator.splitoperator import Split
+        from dpc_reconstruction.io.plots import VisibilityPlotter
         visibility_plotter = VisibilityPlotter()
         splitter = Split()
         network[visibility_calculator] = {

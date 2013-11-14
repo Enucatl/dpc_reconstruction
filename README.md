@@ -30,6 +30,9 @@ please report any bug or feature request using the [issues webpage](https://bitb
 Starting from the installation of stackless python
 
     :::bash
+    git clone https://Enucatl@bitbucket.org/psitomcat/dpc_reconstruction.git
+    cd dpc_reconstruction
+
     #install stackless python
     pyenv virtualenv stackless-2.7.2 stackless-python
 
@@ -49,6 +52,10 @@ Starting from the installation of stackless python
     #come back to the dpc_reconstruction folder
     #and install the pipeline components
     popd
+    pip install numpy
+    pip install h5py
+    pip install matplotlib
+    python setup.py install
     python setup.py bdist_egg --dist-dir ~/bin/pypes/plugins/
 
 ## Structure
