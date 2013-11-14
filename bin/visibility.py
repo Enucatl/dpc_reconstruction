@@ -14,6 +14,8 @@ log = logging.getLogger()
 
 import pypes.pipeline
 
+from pypesvds.plugins.splitoperator.splitoperator import Split
+from dpc_reconstruction.io.plots import VisibilityPlotter
 from dpc_reconstruction.io.hdf5 import Hdf5Reader
 from dpc_reconstruction.stackers import Stacker
 from dpc_reconstruction.phase_stepping import FourierAnalyzer
@@ -37,8 +39,14 @@ commandline_parser.add_argument('--verbose', '-v',
 commandline_parser.add_argument('--jobs', '-j',
         nargs='?', default=1, type=int,
         help='specifies the number of jobs running simultaneously.')
+commandline_parser.add_argument('--batch', '-b', 
+        action='store_true',
+        help='batch mode (no drawing or user interaction)')
 
-def main(file_names, overwrite=False, jobs=1):
+
+def main(file_names, overwrite=False, jobs=1,
+        batch=False):
+    """show on screen if not batch"""
     file_reader = Hdf5Reader()
     stacker = Stacker()
     fourier_analyzer = FourierAnalyzer()
@@ -60,6 +68,16 @@ def main(file_names, overwrite=False, jobs=1):
                 file_writer: ('out', 'in'),
                 },
             }
+    if not batch:
+        visibility_plotter = VisibilityPlotter()
+        splitter = Split()
+        network[visibility_calculator] = {
+                splitter: ('out', 'in'),
+                }
+        network[splitter] = {
+                file_writer: ('out', 'in'),
+                visibility_plotter: ('out2', 'in'),
+                }
     pipeline = pypes.pipeline.Dataflow(network, n=jobs)
     log.info("{0} {1}: analyzing {2} hdf5 files.".format(
         __name__, get_git_version(), len(file_names)))
@@ -78,4 +96,5 @@ if __name__ == '__main__':
         config_dictionary['handlers']['default']['level'] = 'DEBUG'
         config_dictionary['loggers']['']['level'] = 'DEBUG'
     logging.config.dictConfig(config_dictionary)
-    main(args.files, args.overwrite, args.jobs)
+    main(args.files, args.overwrite,
+            args.jobs, args.batch)

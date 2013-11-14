@@ -46,6 +46,9 @@ class Stacker(pypes.component.Component):
                     self.__class__.__name__, datasets[0].shape))
                 data = np.dstack(datasets)
                 packet.set('data', data)
+                #add info from first dataset
+                for key, value in datasets[0].attrs.iteritems():
+                    packet.set(key, value)
                 log.debug('{0} dataset created with shape {1}'.format(
                     self.__class__.__name__, data.shape))
             except Exception as e:
