@@ -5,7 +5,6 @@
 from __future__ import division, print_function
 
 import os
-import argparse
 from glob import glob
 
 import logging
@@ -22,23 +21,14 @@ from dpc_reconstruction.io.fliccd_hedpc import FliRaw2Numpy
 from dpc_reconstruction.io.hdf5 import Hdf5Writer
 from dpc_reconstruction.version import get_git_version
 
-commandline_parser = argparse.ArgumentParser(description=__doc__,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+from dpc_reconstruction.commandline_parsers.basic import commandline_parser
 
+commandline_parser.description = __doc__
 commandline_parser.add_argument('folder',
         metavar='FOLDER(s)',
         nargs='+',
         help='''folder(s) with the raw files. If you pass multiple
         folders you will get one hdf5 file for each folder.''')
-commandline_parser.add_argument('--overwrite', '-o',
-        action='store_true',
-        help='overwrite hdf5 files if they already exist.')
-commandline_parser.add_argument('--verbose', '-v',
-        action='store_true',
-        help='print all the debug information.')
-commandline_parser.add_argument('--jobs', '-j',
-        nargs='?', default=1, type=int,
-        help='specifies the number of jobs running simultaneously.')
 commandline_parser.add_argument('--remove', '-r',
         action='store_true',
         help='remove the folder after converting the files.')

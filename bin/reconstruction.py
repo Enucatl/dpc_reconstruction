@@ -5,7 +5,6 @@
 from __future__ import division, print_function
 
 import os
-import argparse
 
 import logging
 import logging.config
@@ -15,6 +14,7 @@ log = logging.getLogger()
 import pypes.pipeline
 import pypesvds.lib.packet
 
+from dpc_reconstruction.commandline_parsers.basic import commandline_parser
 from dpc_reconstruction.io.hdf5 import Hdf5Reader
 from dpc_reconstruction.split_flats import SplitFlats
 from dpc_reconstruction.split_flats import MergeFlatSample
@@ -26,9 +26,7 @@ from dpc_reconstruction.visibility import VisibilityCalculator
 from dpc_reconstruction.io.hdf5 import Hdf5Writer
 from dpc_reconstruction.version import get_git_version
 
-commandline_parser = argparse.ArgumentParser(description=__doc__,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
+commandline_parser.description = __doc__
 commandline_parser.add_argument('files',
         metavar='FILE(s)',
         nargs='+',
@@ -37,18 +35,6 @@ commandline_parser.add_argument('--flat', '-f',
         metavar='FLATS(s)',
         nargs='+',
         help='''file(s) with the images''')
-commandline_parser.add_argument('--overwrite', '-o',
-        action='store_true',
-        help='overwrite hdf5 files if they already exist.')
-commandline_parser.add_argument('--verbose', '-v',
-        action='store_true',
-        help='print all the debug information.')
-commandline_parser.add_argument('--jobs', '-j',
-        nargs='?', default=1, type=int,
-        help='specifies the number of jobs running simultaneously.')
-commandline_parser.add_argument('--batch', '-b', 
-        action='store_true',
-        help='batch mode (no drawing or user interaction)')
 commandline_parser.add_argument('--steps', '-s',
         nargs='?', default=1, type=int,
         help='number of phase steps')
