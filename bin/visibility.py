@@ -25,7 +25,7 @@ commandline_parser = argparse.ArgumentParser(description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 commandline_parser.add_argument('files',
-        metavar='FOLDER(s)',
+        metavar='FILE(s)',
         nargs='+',
         help='''file(s) with the images''')
 commandline_parser.add_argument('--overwrite', '-o',

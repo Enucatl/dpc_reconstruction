@@ -38,6 +38,7 @@ setup(
     scripts = [
         "bin/dpc_make_hdf5.py",
         "bin/visibility.py",
+        "bin/reconstruction.py",
         ],
 
     install_requires = [
