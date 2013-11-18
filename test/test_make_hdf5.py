@@ -26,6 +26,14 @@ from dpc_reconstruction.io.fliccd_hedpc import FliRaw2Numpy
 
 from conftest import TEST_INPUT_FILES
 
+import logging
+import logging.config
+from dpc_reconstruction.logger_config import config_dictionary
+log = logging.getLogger()
+config_dictionary['handlers']['default']['level'] = 'DEBUG'
+config_dictionary['loggers']['']['level'] = 'DEBUG'
+logging.config.dictConfig(config_dictionary)
+
 @pytest.mark.usefixtures("packet")
 @pytest.mark.usefixtures("pype_and_tasklet")
 class TestMakeHdf5(object):

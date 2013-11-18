@@ -12,7 +12,7 @@ import pypes.component
 
 log = logging.getLogger(__name__)
 
-def get_signals(phase_stepping_curves, n_periods=1, flat=None):
+def get_signals(phase_stepping_curves, n_periods=1):
     """Get the average a_0, the phase phi and the amplitude 
     |a_1| from the phase stepping curves.
 
@@ -22,26 +22,13 @@ def get_signals(phase_stepping_curves, n_periods=1, flat=None):
 
     n_periods is the number of periods used in the phase stepping
 
-    flat contains a0, phi and a1 from the flat image.
-    The parameters for the flat can be computed with this same function, by
-    simply providing flat=None (which is the default).
-
-    returns a0, phi and a1 in a tuple, after division (subtraction for phi)
-    by the flat parameters if a flat was provided.
-
+    returns a0, phi and a1 along the last axis
     """
 
     transformed = np.fft.rfft(phase_stepping_curves)
     a0 = np.abs(transformed[..., 0]) 
     a1 = np.abs(transformed[..., n_periods]) 
     phi1 = np.angle(transformed[..., n_periods])
-    if flat:
-        a0_flat, phi_flat, a1_flat = flat
-        a0 /= a0_flat
-        a1 /= a1_flat / a0
-        phi1 -= phi_flat
-        #unwrap the phase values
-        phi1 = np.mod(phi1 + np.pi, 2 * np.pi) - np.pi
     shape = phase_stepping_curves.shape[:-1] + (3,)
     output = np.zeros(shape)
     output[..., 0] = a0
@@ -101,6 +88,73 @@ class FourierAnalyzer(pypes.component.Component):
 
                 # send the packet to the next component
                 self.send('out', packet)
+
+            # yield the CPU, allowing another component to run
+            self.yield_ctrl()
+
+class MergeFlatSample(pypes.component.Component):
+    """
+    Combine the flat field data with the sample data to get the final DPC
+    signal reconstruction.
+
+    mandatory input packet attributes:
+        in  - data: the curve parameters with the sample
+        in2 - data: the curve parameters without the sample (flats)
+
+    optional input packet attributes:
+        - None
+
+    parameters:
+        - par1: [default: blah] 
+
+    output packet attributes:
+        - output attribute:
+
+    """
+
+    # defines the type of component we're creating.
+    __metatype__ = 'TRANSFORMER'
+
+    def __init__(self):
+        # initialize parent class
+        pypes.component.Component.__init__(self)
+        
+        self.add_input('in2', 'input for the flat packet')
+
+        # log successful initialization message
+        log.debug('pypes.component.Component Initialized: %s' % self.__class__.__name__)
+
+    def run(self):
+        # Define our components entry point
+        while True:
+
+            # myparam = self.get_parameter('MyParam')             
+
+            # for each packet waiting on our input port
+            flat_packet = self.receive('in2')
+            sample_packet = self.receive('in')
+            if not flat_packet or not sample_packet:
+                self.yield_ctrl()
+                continue
+            else:
+                try:
+                    flat = flat_packet.get('data')
+                    sample = sample_packet.get('data')
+                    a0_flat = flat[..., 0]
+                    phi_flat = flat[..., 1]
+                    a1_flat = flat[..., 2]
+                    sample[..., 0] /= a0_flat
+                    sample[..., 1] -= phi_flat
+                    sample[..., 2] /= a1_flat / sample[..., 0]
+                    #unwrap the phase values
+                    sample[..., 1] = np.mod(sample[..., 1] + np.pi, 2 * np.pi) - np.pi
+                    sample_packet.set('data', sample)
+                except Exception as e:
+                    log.error('Component Failed: %s' % self.__class__.__name__,
+                            exc_info=True)
+
+                # send the packet to the next component
+                self.send('out', sample_packet)
 
             # yield the CPU, allowing another component to run
             self.yield_ctrl()
