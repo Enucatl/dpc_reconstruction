@@ -17,6 +17,7 @@ import pypesvds.lib.packet
 
 from dpc_reconstruction.io.hdf5 import Hdf5Reader
 from dpc_reconstruction.split_flats import SplitFlats
+from dpc_reconstruction.split_flats import MergeFlatSample
 from dpc_reconstruction.stackers import Stacker
 from dpc_reconstruction.average import Average
 from dpc_reconstruction.stackers import PhaseStepsSplitter
@@ -32,7 +33,7 @@ commandline_parser.add_argument('files',
         metavar='FILE(s)',
         nargs='+',
         help='''file(s) with the images''')
-commandline_parser.add_argument('--flat', '-f'
+commandline_parser.add_argument('--flat', '-f',
         metavar='FLATS(s)',
         nargs='+',
         help='''file(s) with the images''')
@@ -61,6 +62,10 @@ def main(file_names, flat_file_names, phase_steps,
 
     sample_reader = Hdf5Reader()
     flat_reader = Hdf5Reader()
+    sample_reader.__metatype__ = "TRANSFORMER"
+    flat_reader.__metatype__ = "TRANSFORMER"
+    sample_reader.set_parameter("group", "raw_images")
+    flat_reader.set_parameter("group", "raw_images")
 
     sample_stacker = Stacker()
     flat_stacker = Stacker()
@@ -83,19 +88,25 @@ def main(file_names, flat_file_names, phase_steps,
     packet.set('flat', flat_file_names)
     network = {
         flat_splitter: {
-            sample_reader('out', 'in'),
-            flat_reader('out2', 'in'),
+            sample_reader: ('out', 'in'),
+            flat_reader: ('out2', 'in'),
         },
         sample_reader: {
             sample_stacker: ('out', 'in'),
         },
         sample_stacker: {
+            sample_step_splitter: ('out', 'in'),
+        },
+        sample_step_splitter: {
             sample_fourier_analyzer: ('out', 'in'),
         },
         flat_reader: {
             flat_stacker: ('out', 'in'),
         },
         flat_stacker: {
+            flat_step_splitter: ('out', 'in'),
+        },
+        flat_step_splitter: {
             flat_fourier_analyzer: ('out', 'in'),
         },
         sample_fourier_analyzer: {

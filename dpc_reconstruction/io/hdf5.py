@@ -125,10 +125,10 @@ class Hdf5Reader(pypes.component.Component):
             packet = pypesvds.lib.packet.Packet()
             for file_name in file_names:
                 try:
+                    log.debug('{0} reading file {1}'.format(
+                        self.__class__.__name__, file_name))
                     input_file = h5py.File(file_name)
                     input_group = input_file[group_name]
-                    log.debug('{0} read file {1}'.format(
-                        self.__class__.__name__, file_name))
                     #save files so that they are not garbage collected
                     self.files.append(input_file)
                     datasets.extend([dataset
@@ -152,3 +152,24 @@ class Hdf5Reader(pypes.component.Component):
             log.debug('{0} closing file {1}'.format(
                 self.__class__.__name__, f.filename))
             f.close()
+            
+def output_name(files, component_name):
+    """
+    Get the name of the output hdf5 file from a list of input files.
+
+    """
+    first_file_name, ext = os.path.splitext(os.path.basename(files[0]))
+    last_file_name = os.path.splitext(os.path.basename(files[-1]))[0]
+    dir_name = os.path.dirname(files[0])
+    if len(files) > 1:
+        output_file_name = os.path.join(
+        dir_name, "{0}_{1}/{2}".format(
+        first_file_name, last_file_name,
+        component_name))
+    else:
+        output_file_name = os.path.join(
+        dir_name, "{0}/{1}".format(
+        first_file_name, 
+        component_name))
+    return output_file_name
+

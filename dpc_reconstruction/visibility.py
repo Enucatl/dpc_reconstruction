@@ -7,25 +7,7 @@ import pypes.component
 
 log = logging.getLogger(__name__)
 
-def output_name(files, component_name):
-    """
-    Get the name of the output hdf5 file from a list of input files.
-
-    """
-    first_file_name, ext = os.path.splitext(os.path.basename(files[0]))
-    last_file_name = os.path.splitext(os.path.basename(files[-1]))[0]
-    dir_name = os.path.dirname(files[0])
-    if len(files) > 1:
-        output_file_name = os.path.join(
-        dir_name, "{0}_{1}/{2}".format(
-        first_file_name, last_file_name,
-        component_name))
-    else:
-        output_file_name = os.path.join(
-        dir_name, "{0}/{1}".format(
-        first_file_name, 
-        component_name))
-    return output_file_name
+from dpc_reconstruction.io.hdf5 import output_name 
 
 class VisibilityCalculator(pypes.component.Component):
     """

@@ -9,6 +9,8 @@ import numpy as np
 
 import pypes.component
 
+from dpc_reconstruction.io.hdf5 import output_name 
+
 log = logging.getLogger(__name__)
 
 class Stacker(pypes.component.Component):
@@ -46,6 +48,11 @@ class Stacker(pypes.component.Component):
                     self.__class__.__name__, datasets[0].shape))
                 data = np.dstack(datasets)
                 packet.set('data', data)
+                file_names = packet.get('file_names')
+                packet.delete("file_names")
+                output_file_name = output_name(
+                    file_names, self.__class__.__name__)
+                packet.set("full_path", output_file_name)
                 #add info from first dataset
                 for key, value in datasets[0].attrs.iteritems():
                     packet.set(key, value)

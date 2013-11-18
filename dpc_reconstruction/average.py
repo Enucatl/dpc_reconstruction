@@ -19,7 +19,7 @@ class Average(pypes.component.Component):
         - None
 
     parameters:
-        - axis: [default: -1] axis along which to perform the averaging
+        - axis: [default: 2] axis along which to perform the averaging
 
     output packet attributes:
         - data: the (n-1)-dimensional dataset, averaged along one axis
@@ -35,7 +35,7 @@ class Average(pypes.component.Component):
         
         # Setup any user parameters required by this component 
         # 2nd arg is the default value, 3rd arg is optional list of choices
-        self.set_parameter('axis', -1)
+        self.set_parameter('axis', 2)
 
         # log successful initialization message
         log.debug('pypes.component.Component Initialized: %s' % self.__class__.__name__)
