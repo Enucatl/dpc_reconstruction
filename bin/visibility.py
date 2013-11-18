@@ -21,7 +21,7 @@ from dpc_reconstruction.io.hdf5 import Hdf5Writer
 from dpc_reconstruction.version import get_git_version
 
 from dpc_reconstruction.commandline_parsers.basic import commandline_parser
-commandline_parser = __doc__
+commandline_parser.description = __doc__
 commandline_parser.add_argument('files',
         metavar='FILE(s)',
         nargs='+',
