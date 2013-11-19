@@ -48,6 +48,8 @@ class ShadoboxToNumpy(pypes.component.Component):
                     # array
                     data = np.reshape(data_array[2:], (header[0],
                                                        header[1]))
+                    log.debug('{0} read dataset with shape {1}'.format(
+                        self.__class__.__name__, data.shape))
                     packet.set('header', header)
                     packet.set('data', data)
                 except Exception as e:
