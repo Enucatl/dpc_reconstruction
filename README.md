@@ -3,7 +3,8 @@
 ## Requirements
 
 [pyenv](https://github.com/yyuu/pyenv) and [pyenv-virtualenv](https://github.com/yyuu/pyenv-virtualenv) to easily manage different python versions.
-[Stackless Python 2.7.2](http://www.stackless.com/)
+
+[Stackless Python](http://www.stackless.com/) 2.7.2
 
 [GIT](http://git-scm.com/ "GIT homepage") version control system ≥ 1.7
 
