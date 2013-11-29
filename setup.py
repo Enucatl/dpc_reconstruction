@@ -36,8 +36,8 @@ setup(
     version = get_git_version(),
     packages = find_packages(exclude='test'),
     scripts = [
-        "bin/dpc_make_hdf5.py",
-        "bin/shadobox_make_hdf5.py",
+        "bin/fliccd2hdf5.py",
+        "bin/shadobox2hdf5.py",
         "bin/visibility.py",
         "bin/reconstruction.py",
         ],
