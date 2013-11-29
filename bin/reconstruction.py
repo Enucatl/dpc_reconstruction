@@ -14,7 +14,7 @@ log = logging.getLogger()
 import pypes.pipeline
 import pypesvds.lib.packet
 
-from dpc_reconstruction.commandline_parsers.basic import commandline_parser
+from dpc_reconstruction.commandline_parsers.basic import BasicParser
 from dpc_reconstruction.io.hdf5 import Hdf5Reader
 from dpc_reconstruction.split_flats import SplitFlats
 from dpc_reconstruction.split_flats import MergeFlatSample
@@ -26,32 +26,28 @@ from dpc_reconstruction.visibility import VisibilityCalculator
 from dpc_reconstruction.io.hdf5 import Hdf5Writer
 from dpc_reconstruction.version import get_git_version
 
-commandline_parser.description = __doc__
+commandline_parser = BasicParser(description=__doc__)
 commandline_parser.add_argument('files',
         metavar='FILE(s)',
         nargs='+',
         help='''file(s) with the images''')
-commandline_parser.add_argument('--flat', '-f',
+commandline_parser.add_argument('--flat',
         metavar='FLATS(s)',
         nargs='+',
-        help='''file(s) with the images''')
+        help='''file(s) with the flat images''')
 commandline_parser.add_argument('--steps', '-s',
         nargs='?', default=1, type=int,
         help='number of phase steps')
 
-def main(file_names, flat_file_names, phase_steps,
-         overwrite=False, jobs=1, batch=False):
-    """show on screen if not batch"""
-    packet = pypesvds.lib.packet.Packet()
-
+def reconstruction_network_factory(phase_steps, overwrite, group="raw_images"):
     flat_splitter = SplitFlats()
 
     sample_reader = Hdf5Reader()
     flat_reader = Hdf5Reader()
     sample_reader.__metatype__ = "TRANSFORMER"
     flat_reader.__metatype__ = "TRANSFORMER"
-    sample_reader.set_parameter("group", "raw_images")
-    flat_reader.set_parameter("group", "raw_images")
+    sample_reader.set_parameter("group", group)
+    flat_reader.set_parameter("group", group)
 
     sample_stacker = Stacker()
     flat_stacker = Stacker()
@@ -69,9 +65,6 @@ def main(file_names, flat_file_names, phase_steps,
     file_writer = Hdf5Writer()
     file_writer.set_parameter("group", "postprocessing")
     file_writer.set_parameter("overwrite", overwrite)
-
-    packet.set('sample', file_names)
-    packet.set('flat', flat_file_names)
     network = {
         flat_splitter: {
             sample_reader: ('out', 'in'),
@@ -108,6 +101,15 @@ def main(file_names, flat_file_names, phase_steps,
             file_writer: ('out', 'in'),
         }
     }
+    return network
+
+def main(file_names, flat_file_names, phase_steps,
+         overwrite=False, jobs=1, batch=False):
+    """show on screen if not batch"""
+    packet = pypesvds.lib.packet.Packet()
+    packet.set('sample', file_names)
+    packet.set('flat', flat_file_names)
+    network = reconstruction_network_factory(phase_steps, overwrite)
     pipeline = pypes.pipeline.Dataflow(network, n=jobs)
     log.info("{0} {1}: analyzing {2} hdf5 files.".format(
         __name__, get_git_version(), len(file_names)))
