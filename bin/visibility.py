@@ -13,56 +13,19 @@ log = logging.getLogger()
 
 import pypes.pipeline
 
-from dpc_reconstruction.io.hdf5 import Hdf5Reader
-from dpc_reconstruction.stackers import Stacker
-from dpc_reconstruction.phase_stepping import FourierAnalyzer
-from dpc_reconstruction.visibility import VisibilityCalculator
-from dpc_reconstruction.io.hdf5 import Hdf5Writer
+from dpc_reconstruction.networks.visibility import visibility_factory
 from dpc_reconstruction.version import get_git_version
-
-from dpc_reconstruction.commandline_parsers.basic import commandline_parser
-commandline_parser.description = __doc__
+from dpc_reconstruction.commandline_parsers.basic import BasicParser
+commandline_parser = BasicParser(description=__doc__)
 commandline_parser.add_argument('files',
         metavar='FILE(s)',
         nargs='+',
         help='''file(s) with the images''')
 
 def main(file_names, overwrite=False, jobs=1,
-        batch=False):
+        batch=True):
     """show on screen if not batch"""
-    file_reader = Hdf5Reader()
-    stacker = Stacker()
-    fourier_analyzer = FourierAnalyzer()
-    visibility_calculator = VisibilityCalculator()
-    file_writer = Hdf5Writer()
-    file_writer.set_parameter("group", "postprocessing")
-    file_writer.set_parameter("overwrite", overwrite)
-    network = {
-            file_reader: {
-                stacker: ('out', 'in'),
-                },
-            stacker: {
-                fourier_analyzer: ('out', 'in'),
-                },
-            fourier_analyzer: {
-                visibility_calculator: ('out', 'in'),
-                },
-            visibility_calculator: {
-                file_writer: ('out', 'in'),
-                },
-            }
-    if not batch:
-        from pypesvds.plugins.splitoperator.splitoperator import Split
-        from dpc_reconstruction.io.plots import VisibilityPlotter
-        visibility_plotter = VisibilityPlotter()
-        splitter = Split()
-        network[visibility_calculator] = {
-                splitter: ('out', 'in'),
-                }
-        network[splitter] = {
-                file_writer: ('out', 'in'),
-                visibility_plotter: ('out2', 'in'),
-                }
+    network = visibility_factory(overwrite, batch)
     pipeline = pypes.pipeline.Dataflow(network, n=jobs)
     log.info("{0} {1}: analyzing {2} hdf5 files.".format(
         __name__, get_git_version(), len(file_names)))

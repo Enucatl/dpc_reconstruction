@@ -17,12 +17,14 @@ import h5py
 import os
 
 import pypes.component
+import pypes.pipeline
 
 from dpc_reconstruction.io.file_reader import FileReader
 from dpc_reconstruction.io.hdf5 import Hdf5Writer
 from dpc_reconstruction.io.fliccd_hedpc import FliRawReader
 from dpc_reconstruction.io.fliccd_hedpc import FliRawHeaderAnalyzer
 from dpc_reconstruction.io.fliccd_hedpc import FliRaw2Numpy
+from dpc_reconstruction.networks.fliccd2hdf5 import fliccd2hdf5_factory
 
 from conftest import TEST_INPUT_FILES
 
@@ -36,7 +38,7 @@ logging.config.dictConfig(config_dictionary)
 
 @pytest.mark.usefixtures("packet")
 @pytest.mark.usefixtures("pype_and_tasklet")
-class TestMakeHdf5(object):
+class TestFliccd2Hdf5(object):
     """Test all the components of the make hdf5 pipeline."""
 
     @pytest.mark.parametrize("input_file_name", TEST_INPUT_FILES)
@@ -115,3 +117,13 @@ class TestMakeHdf5(object):
         output = pype.recv()
         assert (output.get("data") == random_image).all()
     test_fli_raw_2_numpy.component = FliRaw2Numpy
+
+class TestFliccd2Hdf5Network(object):
+    """Test the complete network"""
+
+    def test_complete_network(self):
+        network = fliccd2hdf5_factory(overwrite=True, remove_source=False)
+        pipeline = pypes.pipeline.Dataflow(network)
+        for file_name in TEST_INPUT_FILES:
+            pipeline.send(file_name)
+        pipeline.close()

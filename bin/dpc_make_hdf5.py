@@ -14,16 +14,11 @@ log = logging.getLogger()
 
 import pypes.pipeline
 
-from dpc_reconstruction.io.file_reader import FileReader
-from dpc_reconstruction.io.fliccd_hedpc import FliRawReader
-from dpc_reconstruction.io.fliccd_hedpc import FliRawHeaderAnalyzer
-from dpc_reconstruction.io.fliccd_hedpc import FliRaw2Numpy
-from dpc_reconstruction.io.hdf5 import Hdf5Writer
+from dpc_reconstruction.networks.fliccd2hdf5 import fliccd2hdf5_factory
 from dpc_reconstruction.version import get_git_version
+from dpc_reconstruction.commandline_parsers.basic import BasicParser
 
-from dpc_reconstruction.commandline_parsers.basic import commandline_parser
-
-commandline_parser.description = __doc__
+commandline_parser = BasicParser(description=__doc__)
 commandline_parser.add_argument('folder',
         metavar='FOLDER(s)',
         nargs='+',
@@ -34,28 +29,7 @@ commandline_parser.add_argument('--remove', '-r',
         help='remove the folder after converting the files.')
 
 def main(folders, overwrite=False, jobs=1, remove_source=False):
-    file_reader = FileReader()
-    file_reader.set_parameter("remove_source", remove_source)
-    fliraw_reader = FliRawReader()
-    header_analyzer = FliRawHeaderAnalyzer()
-    numpy_converter = FliRaw2Numpy()
-    hdf_writer = Hdf5Writer()
-    hdf_writer.set_parameter("overwrite", overwrite)
-    FliRawReader.__metatype__ = "TRANSFORMER"
-    network = {
-            file_reader: {
-                fliraw_reader: ('out', 'in'),
-                },
-            fliraw_reader: {
-                header_analyzer: ('out', 'in'),
-                },
-            header_analyzer: {
-                numpy_converter: ('out', 'in'),
-                },
-            numpy_converter: {
-                hdf_writer: ('out', 'in'),
-                },
-            }
+    network = fliccd2hdf5_factory(overwrite, remove_source)
     pipeline = pypes.pipeline.Dataflow(network, n=jobs)
     for folder in folders:
         if not os.path.exists(folder) or not os.path.isdir(folder):
