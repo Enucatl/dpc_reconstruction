@@ -85,8 +85,13 @@ please report any bug or feature request using the [issues webpage](https://bitb
 
 ## Structure
 
-A template for the pipeline components is available in the TemplateComponent
-file.
+A template for the pipeline components is available in the
+`dpc_reconstruction/template.py` file.
+
+The executable programs are in the `bin` folder. They are expected not to
+print any output, as in the linux commandline tradition, when they run
+successfully. Run them with the `--verbose` option to get more info on what
+is actually going on.
 
 ## Code style
 
