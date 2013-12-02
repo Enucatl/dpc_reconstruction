@@ -18,7 +18,8 @@ from dpc_reconstruction.networks.fliccd2hdf5 import fliccd2hdf5_factory
 from dpc_reconstruction.version import get_git_version
 from dpc_reconstruction.commandline_parsers.basic import BasicParser
 
-commandline_parser = BasicParser(description=__doc__)
+description = "{1}\n\n{0}\n".format(get_git_version(), __doc__)
+commandline_parser = BasicParser(description=description)
 commandline_parser.add_argument('folder',
         metavar='FOLDER(s)',
         nargs='+',
@@ -37,7 +38,7 @@ def main(folders, overwrite=False, jobs=1, remove_source=False):
                 __name__, folder))
             raise OSError
         file_names = sorted(glob(os.path.join(folder, "*.raw")))
-        log.info("{0} {1}: converting {2} raw files.".format(
+        log.debug("{0} {1}: converting {2} raw files.".format(
             __name__, get_git_version(), len(file_names)))
         for file_name in file_names:
             pipeline.send(file_name)
