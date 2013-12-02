@@ -1,3 +1,6 @@
+"""Separate the flats from the data and merge them again after the
+analysis."""
+
 from __future__ import division, print_function
 
 import logging
@@ -7,7 +10,6 @@ import pypes.component
 
 log = logging.getLogger(__name__)
 
-from dpc_reconstruction.phase_stepping import get_signals
 
 class SplitFlats(pypes.component.Component):
     """
@@ -35,11 +37,12 @@ class SplitFlats(pypes.component.Component):
     def __init__(self):
         # initialize parent class
         pypes.component.Component.__init__(self)
-        
+
         self.add_output('out2', 'output for the flat data')
 
         # log successful initialization message
-        log.debug('pypes.component.Component Initialized: %s' % self.__class__.__name__)
+        log.debug('pypes.component.Component Initialized: %s',
+                  self.__class__.__name__)
 
     def run(self):
         # Define our components entry point
@@ -52,12 +55,13 @@ class SplitFlats(pypes.component.Component):
                         self.send('out', file_name)
                     for file_name in packet.get('flat'):
                         self.send('out2', file_name)
-                except Exception as e:
-                    log.error('Component Failed: %s' % self.__class__.__name__,
-                            exc_info=True)
+                except:
+                    log.error('Component Failed: %s', self.__class__.__name__,
+                              exc_info=True)
 
             # yield the CPU, allowing another component to run
             self.yield_ctrl()
+
 
 class MergeFlatSample(pypes.component.Component):
     """
@@ -72,7 +76,7 @@ class MergeFlatSample(pypes.component.Component):
         - None
 
     parameters:
-        - par1: [default: blah] 
+        - None
 
     output packet attributes:
         - output attribute:
@@ -85,17 +89,18 @@ class MergeFlatSample(pypes.component.Component):
     def __init__(self):
         # initialize parent class
         pypes.component.Component.__init__(self)
-        
+
         self.add_input('in2', 'input for the flat packet')
 
         # log successful initialization message
-        log.debug('pypes.component.Component Initialized: %s' % self.__class__.__name__)
+        log.debug('Component Initialized: %s',
+                  self.__class__.__name__)
 
     def run(self):
         # Define our components entry point
         while True:
 
-            # myparam = self.get_parameter('MyParam')             
+            # myparam = self.get_parameter('MyParam')
 
             # for each packet waiting on our input port
             flat_packet = self.receive('in2')
@@ -114,11 +119,12 @@ class MergeFlatSample(pypes.component.Component):
                     sample[..., 1] -= phi_flat
                     sample[..., 2] /= a1_flat / sample[..., 0]
                     #unwrap the phase values
-                    sample[..., 1] = np.mod(sample[..., 1] + np.pi, 2 * np.pi) - np.pi
+                    sample[..., 1] = np.mod(
+                        sample[..., 1] + np.pi, 2 * np.pi) - np.pi
                     sample_packet.set('data', sample)
-                except Exception as e:
-                    log.error('Component Failed: %s' % self.__class__.__name__,
-                            exc_info=True)
+                except:
+                    log.error('Component Failed: %s', self.__class__.__name__,
+                              exc_info=True)
 
                 # send the packet to the next component
                 self.send('out', sample_packet)
