@@ -24,13 +24,16 @@ from dpc_reconstruction.commandline_parsers.basic import BasicParser
 description = "{1}\n\n{0}\n".format(get_git_version(), __doc__)
 commandline_parser = BasicParser(description=description)
 commandline_parser.add_argument('folder',
-        metavar='FOLDER(s)',
-        nargs='+',
-        help='''folder(s) with the raw files. If you pass multiple
-        folders you will get one hdf5 file for each folder.''')
+                                metavar='FOLDER(s)',
+                                nargs='+',
+                                help='''folder(s) with the raw files. If you
+                                pass multiple folders you will get one hdf5
+                                file for each folder.''')
 commandline_parser.add_argument('--remove', '-r',
-        action='store_true',
-        help='remove the folder after converting the files.')
+                                action='store_true',
+                                help='''remove the folder after converting the
+                                files.''')
+
 
 def main(folders, overwrite=False, jobs=1):
     file_reader = FileReader()
@@ -56,13 +59,12 @@ def main(folders, overwrite=False, jobs=1):
             __name__, get_git_version(), len(file_names)))
         for file_name in file_names:
             pipeline.send(file_name)
-    pipeline.close()
-            
+            pipeline.close()
+
 if __name__ == '__main__':
-    import sys
     args = commandline_parser.parse_args()
     if args.verbose:
         config_dictionary['handlers']['default']['level'] = 'DEBUG'
         config_dictionary['loggers']['']['level'] = 'DEBUG'
-    logging.config.dictConfig(config_dictionary)
-    main(args.folder, args.overwrite, args.jobs)
+        logging.config.dictConfig(config_dictionary)
+        main(args.folder, args.overwrite, args.jobs)

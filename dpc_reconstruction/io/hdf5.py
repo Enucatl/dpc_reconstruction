@@ -16,7 +16,6 @@ import pypesvds.lib.packet
 log = logging.getLogger(__name__)
 
 class Hdf5Writer(pypes.component.Component):
-
     """Output an image to HDF5, with all of its metadata.
     
     mandatory input packet attributes:

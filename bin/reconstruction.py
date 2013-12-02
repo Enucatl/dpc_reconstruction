@@ -4,8 +4,6 @@
 
 from __future__ import division, print_function
 
-import os
-
 import logging
 import logging.config
 from dpc_reconstruction.logger_config import config_dictionary
@@ -22,25 +20,27 @@ from dpc_reconstruction.stackers import Stacker
 from dpc_reconstruction.average import Average
 from dpc_reconstruction.stackers import PhaseStepsSplitter
 from dpc_reconstruction.phase_stepping import FourierAnalyzer
-from dpc_reconstruction.visibility import VisibilityCalculator
 from dpc_reconstruction.io.hdf5 import Hdf5Writer
 from dpc_reconstruction.version import get_git_version
 
 description = "{1}\n\n{0}\n".format(get_git_version(), __doc__)
 commandline_parser = BasicParser(description=description)
 commandline_parser.add_argument('files',
-        metavar='FILE(s)',
-        nargs='+',
-        help='''file(s) with the images''')
+                                metavar='FILE(s)',
+                                nargs='+',
+                                help='''file(s) with the images''')
 commandline_parser.add_argument('--flat',
-        metavar='FLATS(s)',
-        nargs='+',
-        help='''file(s) with the flat images''')
+                                metavar='FLATS(s)',
+                                nargs='+',
+                                help='''file(s) with the flat images''')
 commandline_parser.add_argument('--steps', '-s',
-        nargs='?', default=1, type=int,
-        help='number of phase steps')
+                                nargs='?', default=1, type=int,
+                                help='number of phase steps')
+
 
 def reconstruction_network_factory(phase_steps, overwrite, group="raw_images"):
+    """Build the network for the reconstruction pipeline.
+    """
     flat_splitter = SplitFlats()
 
     sample_reader = Hdf5Reader()
@@ -104,8 +104,9 @@ def reconstruction_network_factory(phase_steps, overwrite, group="raw_images"):
     }
     return network
 
+
 def main(file_names, flat_file_names, phase_steps,
-         overwrite=False, jobs=1, batch=False):
+         overwrite=False, jobs=1):
     """show on screen if not batch"""
     packet = pypesvds.lib.packet.Packet()
     packet.set('sample', file_names)
@@ -118,11 +119,10 @@ def main(file_names, flat_file_names, phase_steps,
     pipeline.close()
 
 if __name__ == '__main__':
-    import sys
     args = commandline_parser.parse_args()
     if args.verbose:
         config_dictionary['handlers']['default']['level'] = 'DEBUG'
         config_dictionary['loggers']['']['level'] = 'DEBUG'
-    logging.config.dictConfig(config_dictionary)
-    main(args.files, args.flat, args.steps,
-            args.overwrite, args.jobs, args.batch)
+        logging.config.dictConfig(config_dictionary)
+        main(args.files, args.flat, args.steps,
+             args.overwrite, args.jobs)
