@@ -32,7 +32,7 @@ class ShadoboxToNumpy(pypes.component.Component):
         pypes.component.Component.__init__(self)
         
         # log successful initialization message
-        log.debug('pypes.component.Component Initialized: %s' % self.__class__.__name__)
+        log.debug('Component Initialized: %s' % self.__class__.__name__)
 
     def run(self):
         # Define our components entry point

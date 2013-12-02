@@ -35,7 +35,7 @@ class Stacker(pypes.component.Component):
         pypes.component.Component.__init__(self)
         
         # log successful initialization message
-        log.debug('pypes.component.Component Initialized: %s' % self.__class__.__name__)
+        log.debug('Component Initialized: %s' % self.__class__.__name__)
 
     def run(self):
         # Define our components entry point
@@ -99,7 +99,7 @@ class PhaseStepsSplitter(pypes.component.Component):
         self.set_parameter('phase_steps', 1)
 
         # log successful initialization message
-        log.debug('pypes.component.Component Initialized: %s' % self.__class__.__name__)
+        log.debug('Component Initialized: %s' % self.__class__.__name__)
 
     def run(self):
         # Define our components entry point

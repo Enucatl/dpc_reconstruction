@@ -66,7 +66,7 @@ class FourierAnalyzer(pypes.component.Component):
         self.set_parameter("n_periods", 1)
 
         # log successful initialization message
-        log.debug('pypes.component.Component Initialized: %s' % self.__class__.__name__)
+        log.debug('Component Initialized: %s' % self.__class__.__name__)
 
     def run(self):
         # Define our components entry point

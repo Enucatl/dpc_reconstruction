@@ -41,7 +41,7 @@ class SplitFlats(pypes.component.Component):
         self.add_output('out2', 'output for the flat data')
 
         # log successful initialization message
-        log.debug('pypes.component.Component Initialized: %s',
+        log.debug('Component Initialized: %s',
                   self.__class__.__name__)
 
     def run(self):

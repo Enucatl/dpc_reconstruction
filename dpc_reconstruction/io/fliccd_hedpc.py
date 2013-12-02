@@ -40,7 +40,7 @@ class FliRawReader(pypes.component.Component):
         pypes.component.Component.__init__(self)
 
         # log successful initialization message
-        log.debug('pypes.component.Component Initialized: {0}'.format(
+        log.debug('Component Initialized: {0}'.format(
             self.__class__.__name__))
 
     def run(self):
@@ -91,7 +91,7 @@ class FliRawHeaderAnalyzer(pypes.component.Component):
     def __init__(self):
         pypes.component.Component.__init__(self)
         # log successful initialization message
-        log.debug('pypes.component.Component Initialized: {0}'.format(
+        log.debug('Component Initialized: {0}'.format(
             self.__class__.__name__))
 
     def run(self):
@@ -148,7 +148,7 @@ class FliRaw2Numpy(pypes.component.Component):
     def __init__(self):
         pypes.component.Component.__init__(self)
         # log successful initialization message
-        log.debug('pypes.component.Component Initialized: {0}'.format(
+        log.debug('Component Initialized: {0}'.format(
             self.__class__.__name__))
 
     def run(self):

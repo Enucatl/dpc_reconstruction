@@ -44,7 +44,7 @@ class Hdf5Writer(pypes.component.Component):
         self.remove_output('out')
         self.set_parameter("overwrite", False)  # overwrite existing datasets
         self.set_parameter("group", "/")  # group inside the hdf file
-        log.debug('pypes.component.Component Initialized: {0}'.format(
+        log.debug('Component Initialized: {0}'.format(
             self.__class__.__name__))
 
     def run(self):

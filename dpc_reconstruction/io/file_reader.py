@@ -36,7 +36,7 @@ class FileReader(pypes.component.Component):
         # remove the output port since this is a publisher
         self.set_parameter("mode", "rb")
         self.set_parameter("remove_source", False)
-        log.debug('pypes.component.Component Initialized: {0}'.format(
+        log.debug('Component Initialized: {0}'.format(
             self.__class__.__name__))
         
     def run(self):

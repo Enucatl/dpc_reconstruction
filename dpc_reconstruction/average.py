@@ -38,7 +38,7 @@ class Average(pypes.component.Component):
         self.set_parameter('axis', 2)
 
         # log successful initialization message
-        log.debug('pypes.component.Component Initialized: %s' % self.__class__.__name__)
+        log.debug('Component Initialized: %s' % self.__class__.__name__)
 
     def run(self):
         # Define our components entry point
