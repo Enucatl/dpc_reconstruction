@@ -76,13 +76,18 @@ class Hdf5Writer(pypes.component.Component):
                           output_file_name,
                           self.get_parameter("group"))
                 for key, value in packet.get_attributes().iteritems():
+                    log.debug("%s: adding attribute to dataset %s: %s=%s",
+                              self.__class__.__name__,
+                              dataset_name,
+                              key, value)
                     output_group[dataset_name].attrs[key] = value
+                if output_file:
                     output_file.close()
             except:
                 log.error('Component Failed: %s',
                           self.__class__.__name__, exc_info=True)
-                # yield the CPU, allowing another component to run
-                self.yield_ctrl()
+            # yield the CPU, allowing another component to run
+            self.yield_ctrl()
 
 
 class Hdf5Reader(pypes.component.Component):
