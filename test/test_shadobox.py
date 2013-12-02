@@ -1,8 +1,6 @@
 """Test the dpc reconstructions."""
 
 import pytest
-import numpy as np
-
 from dpc_reconstruction.io.shadobox import ShadoboxToNumpy
 
 import logging
@@ -13,17 +11,19 @@ config_dictionary['handlers']['default']['level'] = 'DEBUG'
 config_dictionary['loggers']['']['level'] = 'DEBUG'
 logging.config.dictConfig(config_dictionary)
 
-@pytest.mark.usefixtures("packet")
-@pytest.mark.usefixtures("pype_and_tasklet")
+
+@pytest.mark.usefixtures("packet")  # pylint: disable=E1101
+@pytest.mark.usefixtures("pype_and_tasklet")  # pylint: disable=E1101
 class TestShadobox(object):
     """Test the shadobox reader
-    
+
     """
 
     def test_shadobox_to_numpy(self, pype_and_tasklet,
-                                  packet):
-        pype, tasklet, component = pype_and_tasklet
-        packet.set('data', open('shadobox_test.raw', 'rb').read())
+                               packet):
+        pype, tasklet, _ = pype_and_tasklet
+        packet.set('data',
+                   open('shadobox_data/shadobox_test.raw', 'rb').read())
         pype.send(packet)
         tasklet.run()
         output = pype.recv()
