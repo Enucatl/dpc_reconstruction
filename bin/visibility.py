@@ -38,13 +38,13 @@ def main(file_names, overwrite=False, jobs=1,
                 __name__, file_name))
             raise OSError
         pipeline.send(file_name)
-        pipeline.close()
+    pipeline.close()
 
 if __name__ == '__main__':
     args = commandline_parser.parse_args()
     if args.verbose:
         config_dictionary['handlers']['default']['level'] = 'DEBUG'
         config_dictionary['loggers']['']['level'] = 'DEBUG'
-        logging.config.dictConfig(config_dictionary)
-        main(args.files, args.overwrite,
-             args.jobs, args.batch)
+    logging.config.dictConfig(config_dictionary)
+    main(args.files, args.overwrite,
+         args.jobs, args.batch)

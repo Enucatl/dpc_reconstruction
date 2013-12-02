@@ -53,18 +53,19 @@ def main(folders, overwrite=False, jobs=1):
         if not os.path.exists(folder) or not os.path.isdir(folder):
             log.error("{0}: folder {1} not found!".format(
                 __name__, folder))
+            pipeline.close()
             raise OSError
         file_names = sorted(glob(os.path.join(folder, "*.raw")))
         log.debug("{0} {1}: converting {2} raw files.".format(
             __name__, get_git_version(), len(file_names)))
         for file_name in file_names:
             pipeline.send(file_name)
-            pipeline.close()
+    pipeline.close()
 
 if __name__ == '__main__':
     args = commandline_parser.parse_args()
     if args.verbose:
         config_dictionary['handlers']['default']['level'] = 'DEBUG'
         config_dictionary['loggers']['']['level'] = 'DEBUG'
-        logging.config.dictConfig(config_dictionary)
-        main(args.folder, args.overwrite, args.jobs)
+    logging.config.dictConfig(config_dictionary)
+    main(args.folder, args.overwrite, args.jobs)

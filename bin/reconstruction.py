@@ -123,6 +123,6 @@ if __name__ == '__main__':
     if args.verbose:
         config_dictionary['handlers']['default']['level'] = 'DEBUG'
         config_dictionary['loggers']['']['level'] = 'DEBUG'
-        logging.config.dictConfig(config_dictionary)
-        main(args.files, args.flat, args.steps,
-             args.overwrite, args.jobs)
+    logging.config.dictConfig(config_dictionary)
+    main(args.files, args.flat, args.steps,
+         args.overwrite, args.jobs)
