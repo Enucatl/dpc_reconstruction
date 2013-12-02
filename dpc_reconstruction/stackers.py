@@ -9,9 +9,10 @@ import numpy as np
 
 import pypes.component
 
-from dpc_reconstruction.io.hdf5 import output_name 
+from dpc_reconstruction.io.hdf5 import output_name
 
 log = logging.getLogger(__name__)
+
 
 class Stacker(pypes.component.Component):
     """
@@ -33,9 +34,9 @@ class Stacker(pypes.component.Component):
     def __init__(self):
         # initialize parent class
         pypes.component.Component.__init__(self)
-        
+
         # log successful initialization message
-        log.debug('Component Initialized: %s' % self.__class__.__name__)
+        log.debug('Component Initialized: %s', self.__class__.__name__)
 
     def run(self):
         # Define our components entry point
@@ -53,20 +54,23 @@ class Stacker(pypes.component.Component):
                 output_file_name = output_name(
                     file_names, self.__class__.__name__)
                 packet.set("full_path", output_file_name)
+                log.debug(" ".join(file_names))
+                log.debug(output_file_name)
                 #add info from first dataset
                 for key, value in datasets[0].attrs.iteritems():
                     packet.set(key, value)
                 log.debug('{0} dataset created with shape {1}'.format(
                     self.__class__.__name__, data.shape))
-            except Exception as e:
-                log.error('Component Failed: %s' % self.__class__.__name__,
-                        exc_info=True)
+            except:
+                log.error('Component Failed: %s',
+                          self.__class__.__name__, exc_info=True)
 
             # send the packet to the next component
             self.send('out', packet)
 
             # yield the CPU, allowing another component to run
             self.yield_ctrl()
+
 
 class PhaseStepsSplitter(pypes.component.Component):
     """
@@ -93,19 +97,19 @@ class PhaseStepsSplitter(pypes.component.Component):
     def __init__(self):
         # initialize parent class
         pypes.component.Component.__init__(self)
-        
-        # Setup any user parameters required by this component 
+
+        # Setup any user parameters required by this component
         # 2nd arg is the default value, 3rd arg is optional list of choices
         self.set_parameter('phase_steps', 1)
 
         # log successful initialization message
-        log.debug('Component Initialized: %s' % self.__class__.__name__)
+        log.debug('Component Initialized: %s', self.__class__.__name__)
 
     def run(self):
         # Define our components entry point
         while True:
 
-            phase_steps = self.get_parameter('phase_steps')             
+            phase_steps = self.get_parameter('phase_steps')
 
             # for each packet waiting on our input port
             for packet in self.receive_all('in'):
@@ -113,8 +117,8 @@ class PhaseStepsSplitter(pypes.component.Component):
                     data = packet.get('data')
                     chunk_size = data.shape[2] // phase_steps
                     log.debug(
-                        '{0} splitting data with shape {1} into {2} chunks'.format(
-                        self.__class__.__name__, data.shape, chunk_size))
+                        '{0} split data with shape {1} into {2} chunks'.format(
+                            self.__class__.__name__, data.shape, chunk_size))
                     split_data = np.split(data, chunk_size, axis=2)
                     #add axis to each dataset
                     added_axis = [np.expand_dims(array, axis=2)
@@ -123,9 +127,9 @@ class PhaseStepsSplitter(pypes.component.Component):
                     packet.set('data', concatenated)
                     log.debug('{0} dataset created with shape {1}'.format(
                         self.__class__.__name__, concatenated.shape))
-                except Exception as e:
-                    log.error('Component Failed: %s' % self.__class__.__name__,
-                            exc_info=True)
+                except:
+                    log.error('Component Failed: %s',
+                              self.__class__.__name__, exc_info=True)
 
                 # send the packet to the next component
                 self.send('out', packet)

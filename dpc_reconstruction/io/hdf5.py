@@ -147,19 +147,23 @@ class Hdf5Reader(pypes.component.Component):
                 except:
                     log.error('Component Failed: %s',
                               self.__class__.__name__, exc_info=True)
-                    packet.set("data", datasets)
-                    packet.set("file_names", file_names)
-                    # send the packet to the next component
-                    self.send('out', packet)
-                    # yield the CPU, allowing another component to run
-                    self.yield_ctrl()
+            packet.set("data", datasets)
+            packet.set("file_names", file_names)
+            # send the packet to the next component
+            self.send('out', packet)
+            # yield the CPU, allowing another component to run
+            self.yield_ctrl()
 
     def __del__(self):
         """close files when the reference count is 0."""
         for f in self.files:
             log.debug('{0} closing file {1}'.format(
                 self.__class__.__name__, f.filename))
-            f.close()
+            if f:
+                f.close()
+            else:
+                log.debug('{0} file {1} was already closed'.format(
+                    self.__class__.__name__, f.filename))
 
 
 def output_name(files, component_name):
@@ -177,4 +181,4 @@ def output_name(files, component_name):
     else:
         output_file_name = os.path.join(
             dir_name, "{0}/{1}".format(first_file_name, component_name))
-        return output_file_name
+    return output_file_name
