@@ -21,9 +21,9 @@ from dpc_reconstruction.average import Average
 from dpc_reconstruction.stackers import PhaseStepsSplitter
 from dpc_reconstruction.phase_stepping import FourierAnalyzer
 from dpc_reconstruction.io.hdf5 import Hdf5Writer
-from dpc_reconstruction.version import get_git_version
+from dpc_reconstruction.version import get_setuptools_version
 
-description = "{1}\n\n{0}\n".format(get_git_version(), __doc__)
+description = "{1}\n\n{0}\n".format(get_setuptools_version(), __doc__)
 commandline_parser = BasicParser(description=description)
 commandline_parser.add_argument('files',
                                 metavar='FILE(s)',
@@ -114,7 +114,7 @@ def main(file_names, flat_file_names, phase_steps,
     network = reconstruction_network_factory(phase_steps, overwrite)
     pipeline = pypes.pipeline.Dataflow(network, n=jobs)
     log.debug("{0} {1}: analyzing {2} hdf5 files.".format(
-        __name__, get_git_version(), len(file_names)))
+        __name__, get_setuptools_version(), len(file_names)))
     pipeline.send(packet)
     pipeline.close()
 

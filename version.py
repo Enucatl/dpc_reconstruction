@@ -100,5 +100,11 @@ def get_git_version(abbrev=4):
     return version
 
 
+def get_setuptools_version():
+    """Print version info from setuptools."""
+    import pkg_resources
+    return pkg_resources.require("dpc_reconstruction")[0].version
+
+
 if __name__ == "__main__":
     print get_git_version()

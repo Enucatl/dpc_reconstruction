@@ -54,8 +54,6 @@ class Stacker(pypes.component.Component):
                 output_file_name = output_name(
                     file_names, self.__class__.__name__)
                 packet.set("full_path", output_file_name)
-                log.debug(" ".join(file_names))
-                log.debug(output_file_name)
                 #add info from first dataset
                 for key, value in datasets[0].attrs.iteritems():
                     packet.set(key, value)

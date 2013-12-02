@@ -30,7 +30,6 @@ def get_entry_points():
     print(ini_config)
     return ini_config
 
-
 setup(
     name = "dpc_reconstruction",
     version = get_git_version(),
@@ -54,8 +53,8 @@ setup(
         # If any package contains *.txt or *.rst files, include them:
         '': ['*.txt', '*.rst'],
     },
-    
-    entry_points = get_entry_points(), 
+
+    entry_points = get_entry_points(),
 
     # metadata for upload to PyPI
     author = "TOMCAT DPC group",
