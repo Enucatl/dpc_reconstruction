@@ -122,6 +122,9 @@ class MergeFlatSample(pypes.component.Component):
                     sample[..., 1] = np.mod(
                         sample[..., 1] + np.pi, 2 * np.pi) - np.pi
                     sample_packet.set('data', sample)
+                    log.debug('''%s: merged flat and data and unwrapped the
+                    phase values. Created dataset with shape %s''',
+                              self.__class__.__name__, sample.shape)
                 except:
                     log.error('Component Failed: %s', self.__class__.__name__,
                               exc_info=True)
