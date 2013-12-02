@@ -45,7 +45,7 @@ def main(folders, overwrite=False, jobs=1, remove_source=False):
             __name__, get_git_version(), len(file_names)))
         for file_name in file_names:
             pipeline.send(file_name)
-            pipeline.close()
+        pipeline.close()
 
 if __name__ == '__main__':
     args = commandline_parser.parse_args()
