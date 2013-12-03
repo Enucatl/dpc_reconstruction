@@ -75,7 +75,7 @@ def check_files(files, check):
 
 def main(files):
     # Stash any changes to the working tree that are not going to be committed
-    subprocess.call(['git', 'stash', '-all', '--keep-index'],
+    subprocess.call(['git', 'stash', '-u', '--keep-index'],
                     stdout=subprocess.PIPE)
 
     files = []
