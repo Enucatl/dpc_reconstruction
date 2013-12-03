@@ -100,5 +100,8 @@ is actually going on.
 
 ## Code style
 
-Please follow the Python Enhancement Proposal n. 8
-[PEP8](http://www.python.org/dev/peps/pep-0008/) as much as possible.
+The repository is set up in a way that prevents commits
+that do not pass both the [pylint](http://www.pylint.org/) and [pep8](https://pypi.python.org/pypi/pep8) checks.
+
+Exceptions to these rules need to be discussed and added to the repository
+beforehand.
