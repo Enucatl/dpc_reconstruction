@@ -17,10 +17,10 @@ def get_entry_points():
 
     """
     command = r'''
-    grep -rI "class \(.*\)(pypes.component.Component):" dpc_reconstruction
-    | sed 's/.py:class /:/'
-    | sed 's:/:.:g'
-    | sed 's/(pypes.component.Component)://'
+    grep -rI "class \(.*\)(pypes.component.Component):" dpc_reconstruction\
+    | sed 's/.py:class /:/'\
+    | sed 's:/:.:g'\
+    | sed 's/(pypes.component.Component)://'\
     | sed 's/\(.*\):\(.*\)/\2 = \1:\2/' '''
     result = check_output(command, shell=True)
     print(result)
