@@ -1,10 +1,12 @@
 .PHONY: install test
 
 install: 
-	chmod +x pre-commit
-	ln -s pre-commit .git/hooks/pre-commit
 	python setup.py develop
 	python setup.py bdist_egg --dist-dir ~/bin/pypes/plugins/
+
+.git/hooks/pre-commit: pre-commit
+	chmod +x pre-commit
+	ln -s pre-commit .git/hooks/pre-commit
 
 test: 
 	cd test; py.test
