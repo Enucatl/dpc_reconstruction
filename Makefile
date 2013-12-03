@@ -3,6 +3,7 @@
 install: 
 	python setup.py develop
 	python setup.py bdist_egg --dist-dir ~/bin/pypes/plugins/
+	pyenv rehash
 
 .git/hooks/pre-commit: pre-commit
 	chmod +x pre-commit
