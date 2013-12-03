@@ -1,13 +1,18 @@
+"""Components involved in the calculation of the visibility from the phase
+stepping curve parameters.
+
+"""
+
 from __future__ import division, print_function
 
 import logging
-import os
 
 import pypes.component
 
 log = logging.getLogger(__name__)
 
-from dpc_reconstruction.io.hdf5 import output_name 
+from dpc_reconstruction.io.hdf5 import output_name
+
 
 class VisibilityCalculator(pypes.component.Component):
     """
@@ -37,9 +42,9 @@ class VisibilityCalculator(pypes.component.Component):
     def __init__(self):
         # initialize parent class
         pypes.component.Component.__init__(self)
-        
+
         # log successful initialization message
-        log.debug('Component Initialized: %s' % self.__class__.__name__)
+        log.debug('Component Initialized: %s', self.__class__.__name__)
 
     def run(self):
         # Define our components entry point
@@ -53,14 +58,14 @@ class VisibilityCalculator(pypes.component.Component):
                     packet.set("data", visibility)
                     files = packet.get("file_names")
                     output_file_name = output_name(
-                            files, self.__class__.__name__)
+                        files, self.__class__.__name__)
                     packet.delete("file_names")
                     packet.set("full_path", output_file_name)
                     log.debug('{0} created a dataset with shape {1}'.format(
                         self.__class__.__name__, visibility.shape))
-                except Exception as e:
-                    log.error('Component Failed: %s' % self.__class__.__name__,
-                            exc_info=True)
+                except:
+                    log.error('Component Failed: %s', self.__class__.__name__,
+                              exc_info=True)
 
                 # send the packet to the next component
                 self.send('out', packet)

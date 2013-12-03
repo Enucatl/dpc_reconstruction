@@ -1,3 +1,5 @@
+"""Graphical output."""
+
 from __future__ import division, print_function
 
 import logging
@@ -7,6 +9,7 @@ import pypes.component
 import matplotlib.pyplot as plt
 
 log = logging.getLogger(__name__)
+
 
 class VisibilityPlotter(pypes.component.Component):
     """
@@ -33,12 +36,12 @@ class VisibilityPlotter(pypes.component.Component):
     def __init__(self):
         # initialize parent class
         pypes.component.Component.__init__(self)
-        
+
         # Optionally add/remove component ports
         self.remove_output('out')
 
         # log successful initialization message
-        log.debug('Component Initialized: %s' % self.__class__.__name__)
+        log.debug('Component Initialized: %s', self.__class__.__name__)
 
     def run(self):
         # Define our components entry point
@@ -53,9 +56,9 @@ class VisibilityPlotter(pypes.component.Component):
                 image = plt.imshow(visibility, cmap=plt.cm.RdYlGn)
                 plt.colorbar(image)
                 plt.show()
-            except Exception as e:
-                log.error('Component Failed: %s' % self.__class__.__name__,
-                        exc_info=True)
+            except:
+                log.error('Component Failed: %s', self.__class__.__name__,
+                          exc_info=True)
 
             # yield the CPU, allowing another component to run
             self.yield_ctrl()

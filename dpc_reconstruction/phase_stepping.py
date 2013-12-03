@@ -12,8 +12,9 @@ import pypes.component
 
 log = logging.getLogger(__name__)
 
+
 def get_signals(phase_stepping_curves, n_periods=1):
-    """Get the average a_0, the phase phi and the amplitude 
+    """Get the average a_0, the phase phi and the amplitude
     |a_1| from the phase stepping curves.
 
     Input:
@@ -26,8 +27,8 @@ def get_signals(phase_stepping_curves, n_periods=1):
     """
 
     transformed = np.fft.rfft(phase_stepping_curves)
-    a0 = np.abs(transformed[..., 0]) 
-    a1 = np.abs(transformed[..., n_periods]) 
+    a0 = np.abs(transformed[..., 0])
+    a1 = np.abs(transformed[..., n_periods])
     phi1 = np.angle(transformed[..., n_periods])
     shape = phase_stepping_curves.shape[:-1] + (3,)
     output = np.zeros(shape)
@@ -35,6 +36,7 @@ def get_signals(phase_stepping_curves, n_periods=1):
     output[..., 1] = phi1
     output[..., 2] = a1
     return output
+
 
 class FourierAnalyzer(pypes.component.Component):
     """
@@ -47,7 +49,8 @@ class FourierAnalyzer(pypes.component.Component):
         - None
 
     parameters:
-        - n_periods: [default: 1] the number of periods used in the phase stepping
+        - n_periods: [default: 1] the number of periods
+        used in the phase stepping
 
     output packet attributes:
         - data: a numpy array with the last axis of length 3:
@@ -66,7 +69,7 @@ class FourierAnalyzer(pypes.component.Component):
         self.set_parameter("n_periods", 1)
 
         # log successful initialization message
-        log.debug('Component Initialized: %s' % self.__class__.__name__)
+        log.debug('Component Initialized: %s', self.__class__.__name__)
 
     def run(self):
         # Define our components entry point
@@ -82,9 +85,9 @@ class FourierAnalyzer(pypes.component.Component):
                     packet.set("data", signals)
                     log.debug('{0} created a dataset with shape {1}'.format(
                         self.__class__.__name__, signals.shape))
-                except Exception as e:
-                    log.error('Component Failed: %s' % self.__class__.__name__,
-                            exc_info=True)
+                except:
+                    log.error('Component Failed: %s', self.__class__.__name__,
+                              exc_info=True)
 
                 # send the packet to the next component
                 self.send('out', packet)

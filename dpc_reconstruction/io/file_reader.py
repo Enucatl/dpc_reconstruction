@@ -1,14 +1,17 @@
+"""Components to read binary files.
+
+"""
+
 from __future__ import division, print_function
 
 import logging
-import traceback
-import h5py
 import os
 
-import pypes.component 
+import pypes.component
 import pypesvds.lib.packet
 
 log = logging.getLogger(__name__)
+
 
 class FileReader(pypes.component.Component):
 
@@ -16,7 +19,7 @@ class FileReader(pypes.component.Component):
 
     mandatory input:
         - the file name as a string
-    
+
     optional input:
         - None
 
@@ -38,7 +41,7 @@ class FileReader(pypes.component.Component):
         self.set_parameter("remove_source", False)
         log.debug('Component Initialized: {0}'.format(
             self.__class__.__name__))
-        
+
     def run(self):
         while True:
             file_name = self.receive("in")
@@ -59,8 +62,8 @@ class FileReader(pypes.component.Component):
                 packet.set('data', data)
                 packet.set('full_path', full_path)
                 self.send('out', packet)
-            except Exception as e:
-                log.error('Component Failed: %s' % self.__class__.__name__,
-                        exc_info=True)
+            except:
+                log.error('Component Failed: %s', self.__class__.__name__,
+                          exc_info=True)
             # yield the CPU, allowing another component to run
             self.yield_ctrl()

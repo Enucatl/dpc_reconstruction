@@ -1,7 +1,7 @@
-"""A factory for the fliccd to hdf5 converter. """
-
 #!/usr/bin/env python
 # encoding: utf-8
+
+"""A factory for the fliccd to hdf5 converter. """
 
 from __future__ import division, print_function
 
@@ -10,6 +10,7 @@ from dpc_reconstruction.io.fliccd_hedpc import FliRawReader
 from dpc_reconstruction.io.fliccd_hedpc import FliRawHeaderAnalyzer
 from dpc_reconstruction.io.fliccd_hedpc import FliRaw2Numpy
 from dpc_reconstruction.io.hdf5 import Hdf5Writer
+
 
 def fliccd2hdf5_factory(overwrite, remove_source):
     """Build a network that converts a fliccd raw file to a hdf5 dataset.
@@ -28,17 +29,17 @@ def fliccd2hdf5_factory(overwrite, remove_source):
     hdf_writer.set_parameter("overwrite", overwrite)
     FliRawReader.__metatype__ = "TRANSFORMER"
     network = {
-            file_reader: {
-                fliraw_reader: ('out', 'in'),
-                },
-            fliraw_reader: {
-                header_analyzer: ('out', 'in'),
-                },
-            header_analyzer: {
-                numpy_converter: ('out', 'in'),
-                },
-            numpy_converter: {
-                hdf_writer: ('out', 'in'),
-                },
-            }
+        file_reader: {
+            fliraw_reader: ('out', 'in'),
+        },
+        fliraw_reader: {
+            header_analyzer: ('out', 'in'),
+        },
+        header_analyzer: {
+            numpy_converter: ('out', 'in'),
+        },
+        numpy_converter: {
+            hdf_writer: ('out', 'in'),
+        },
+    }
     return network

@@ -1,3 +1,4 @@
+"""Components for the shadobox detector."""
 
 from __future__ import division, print_function
 
@@ -8,13 +9,14 @@ import pypes.component
 
 log = logging.getLogger(__name__)
 
+
 class ShadoboxToNumpy(pypes.component.Component):
     """
     mandatory input packet attributes:
         - data: Binary content of the image file
 
     optional input packet attributes:
-        - none: 
+        - none:
 
     parameters:
         - none:
@@ -30,9 +32,9 @@ class ShadoboxToNumpy(pypes.component.Component):
     def __init__(self):
         # initialize parent class
         pypes.component.Component.__init__(self)
-        
+
         # log successful initialization message
-        log.debug('Component Initialized: %s' % self.__class__.__name__)
+        log.debug('Component Initialized: %s', self.__class__.__name__)
 
     def run(self):
         # Define our components entry point
@@ -42,7 +44,7 @@ class ShadoboxToNumpy(pypes.component.Component):
             for packet in self.receive_all('in'):
                 try:
                     raw_data = packet.get('data')
-                    data_array = np.fromstring(raw_data,'uint16')
+                    data_array = np.fromstring(raw_data, 'uint16')
                     header = data_array[:2]
                     # cheack order of header entries to correctly rearrange
                     # array
@@ -52,9 +54,9 @@ class ShadoboxToNumpy(pypes.component.Component):
                         self.__class__.__name__, data.shape))
                     packet.set('header', header)
                     packet.set('data', data)
-                except Exception as e:
-                    log.error('Component Failed: %s' % self.__class__.__name__,
-                            exc_info=True)
+                except:
+                    log.error('Component Failed: %s', self.__class__.__name__,
+                              exc_info=True)
 
                 # send the packet to the next component
                 self.send('out', packet)

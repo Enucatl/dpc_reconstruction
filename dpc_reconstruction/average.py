@@ -10,6 +10,7 @@ import pypes.component
 
 log = logging.getLogger(__name__)
 
+
 class Average(pypes.component.Component):
     """
     mandatory input packet attributes:
@@ -32,18 +33,18 @@ class Average(pypes.component.Component):
     def __init__(self):
         # initialize parent class
         pypes.component.Component.__init__(self)
-        
-        # Setup any user parameters required by this component 
+
+        # Setup any user parameters required by this component
         # 2nd arg is the default value, 3rd arg is optional list of choices
         self.set_parameter('axis', 2)
 
         # log successful initialization message
-        log.debug('Component Initialized: %s' % self.__class__.__name__)
+        log.debug('Component Initialized: %s', self.__class__.__name__)
 
     def run(self):
         # Define our components entry point
         while True:
-            axis = self.get_parameter('axis')             
+            axis = self.get_parameter('axis')
 
             # for each packet waiting on our input port
             for packet in self.receive_all('in'):
@@ -53,15 +54,16 @@ class Average(pypes.component.Component):
                     packet.set('data', averaged)
                     log.debug('{0} dataset created with shape {1}'.format(
                         self.__class__.__name__, averaged.shape))
-                except Exception as e:
-                    log.error('Component Failed: %s' % self.__class__.__name__,
-                            exc_info=True)
+                except:
+                    log.error('Component Failed: %s', self.__class__.__name__,
+                              exc_info=True)
 
                 # send the packet to the next component
                 self.send('out', packet)
 
             # yield the CPU, allowing another component to run
             self.yield_ctrl()
+
 
 def average(dataset, axis=-1):
     """Use the median to average all the images along the axis=axis
