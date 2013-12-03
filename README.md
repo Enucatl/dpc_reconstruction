@@ -52,6 +52,12 @@ please report any bug or feature request using the [issues webpage](https://bitb
     pyenv virtualenv stackless-2.7.2 stackless-python
     pyenv rehash
 
+    #install the python style and syntax checkers
+    pip install pep8
+    pip install pylint
+    pyenv rehash
+
+
 ## Install
 
     :::bash
@@ -80,8 +86,7 @@ please report any bug or feature request using the [issues webpage](https://bitb
     #come back to the dpc_reconstruction folder
     #and install the pipeline components
     popd
-    python setup.py install
-    python setup.py bdist_egg --dist-dir ~/bin/pypes/plugins/
+    make install
 
 ## Structure
 
