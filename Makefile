@@ -9,7 +9,7 @@ install:
 	chmod +x pre-commit
 	ln -s pre-commit .git/hooks/pre-commit
 
-test: 
+tests: 
 	cd test; py.test
 
 clean:

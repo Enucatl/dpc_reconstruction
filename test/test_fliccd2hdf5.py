@@ -36,6 +36,7 @@ config_dictionary['handlers']['default']['level'] = 'DEBUG'
 config_dictionary['loggers']['']['level'] = 'DEBUG'
 logging.config.dictConfig(config_dictionary)
 
+
 @pytest.mark.usefixtures("packet")
 @pytest.mark.usefixtures("pype_and_tasklet")
 class TestFliccd2Hdf5(object):
@@ -43,7 +44,7 @@ class TestFliccd2Hdf5(object):
 
     @pytest.mark.parametrize("input_file_name", TEST_INPUT_FILES)
     def test_file_reader(self, pype_and_tasklet,
-            input_file_name):
+                         input_file_name):
         pype, tasklet, _ = pype_and_tasklet
         pype.send(input_file_name)
         tasklet.run()
@@ -54,7 +55,7 @@ class TestFliccd2Hdf5(object):
 
     @pytest.mark.parametrize("input_file_name", TEST_INPUT_FILES)
     def test_hdf5_writer(self, pype_and_tasklet,
-            packet, input_file_name):
+                         packet, input_file_name):
         pype, tasklet, component = pype_and_tasklet
         component.set_parameter("overwrite", True)
         random_image = np.random.rand(5, 25)
@@ -67,14 +68,15 @@ class TestFliccd2Hdf5(object):
         dataset_name = os.path.splitext(dataset_name)[0]
         output_file = h5py.File(output_hdf5)
         output_group = output_file[
-                component.get_parameter("group")]
+            component.get_parameter("group")]
         assert (output_group[dataset_name][...] == random_image).all()
         assert not packet.has("data")
+        output_file.close()
     test_hdf5_writer.component = Hdf5Writer
 
     @pytest.mark.parametrize("input_file_name", TEST_INPUT_FILES)
     def test_fli_raw_reader(self, pype_and_tasklet,
-            packet, input_file_name):
+                            packet, input_file_name):
         pype, tasklet, _ = pype_and_tasklet
         content = open(input_file_name, "rb").read()
         packet.set("data", content)
@@ -87,7 +89,7 @@ class TestFliccd2Hdf5(object):
 
     @pytest.mark.parametrize("input_file_name", TEST_INPUT_FILES)
     def test_fli_raw_header_analyzer(self, pype_and_tasklet,
-            packet, input_file_name):
+                                     packet, input_file_name):
         pype, tasklet, _ = pype_and_tasklet
         header = open(input_file_name, "rb").readlines()[:16]
         #header = "".join(header)
@@ -102,9 +104,9 @@ class TestFliccd2Hdf5(object):
         assert output.get("exposure_time") == 5
     test_fli_raw_header_analyzer.component = FliRawHeaderAnalyzer
 
-    @pytest.mark.parametrize("tries", range(5))
+    @pytest.mark.parametrize("_", range(5))
     def test_fli_raw_2_numpy(self, pype_and_tasklet,
-            packet, tries):
+                             packet, _):
         pype, tasklet, _ = pype_and_tasklet
         random_image = np.random.randint(5, 25, (10, 10)).astype(np.uint16)
         packet.set("min_x", 0)
@@ -117,6 +119,7 @@ class TestFliccd2Hdf5(object):
         output = pype.recv()
         assert (output.get("data") == random_image).all()
     test_fli_raw_2_numpy.component = FliRaw2Numpy
+
 
 class TestFliccd2Hdf5Network(object):
     """Test the complete network"""
