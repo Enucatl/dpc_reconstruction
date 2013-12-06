@@ -1,4 +1,4 @@
-#pylint: disable=C0111
+# pylint: disable=all
 
 from distribute_setup import use_setuptools
 use_setuptools()
@@ -48,11 +48,11 @@ setup(
     ],
 
     install_requires=[
-        'numpy',
-        'h5py',
-        'matplotlib',
-        'pypes',
-        'pypesvds',
+        'numpy==1.7.1',
+        'h5py==2.2.0',
+        'matplotlib==1.3.1',
+        'pypes==1.2',
+        'pypesvds==1.1.0',
     ],
 
     package_data={
