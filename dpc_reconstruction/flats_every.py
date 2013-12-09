@@ -6,6 +6,7 @@ by one.
 from __future__ import division, print_function
 
 import logging
+import numpy as np
 
 import pypes.component
 import pypesvds.lib.packet
@@ -47,8 +48,8 @@ class SplitFlatSampleEvery(pypes.component.Component):
     # defines the type of component we're creating.
     __metatype__ = 'ADAPTER'
 
-    def __init__(self, flats_every,
-                 n_flats, files):
+    def __init__(self, files, flats_every,
+                 n_flats):
         # initialize parent class
         pypes.component.Component.__init__(self)
 
@@ -83,6 +84,10 @@ class SplitFlatSampleEvery(pypes.component.Component):
                     packet = pypesvds.lib.packet.Packet()
                     packet.set("sample", sample)
                     packet.set("flat", flat)
+                    log.debug("%s: created sample dataset with shape %s",
+                              self.__class__.__name__, sample.shape)
+                    log.debug("%s: created flat dataset with shape %s",
+                              self.__class__.__name__, flat.shape)
                     port = "out{0}".format(i)
                     self.send(port, packet)
             except:
@@ -96,33 +101,35 @@ class SplitFlatSampleEvery(pypes.component.Component):
 class MergeFlatsEvery(pypes.component.Component):
     """
     mandatory input packet attributes:
-    - att1:
+    for each input port:
+    - data: a dataset with the fully analyzed chunk
 
     optional input packet attributes:
-    - opt:
+    - None
 
     parameters:
-    - par1: [default: blah]
+    - n: number of inputs
+    - full_path: full path of the HDF5 to be used as output
 
     output packet attributes:
-    - output attribute:
+    - data: a merge of all the input datasets.
+    - full_path: path to be used for saving to an HDF5 file
 
     """
 
     # defines the type of component we're creating.
     __metatype__ = 'TRANSFORMER'
 
-    def __init__(self):
+    def __init__(self, n):
         # initialize parent class
         pypes.component.Component.__init__(self)
 
-        # Optionally add/remove component ports
-        # self.remove_output('out')
-        # self.add_input('in2', 'A description of what this port is used for')
+        self.set_parameter("n", n)
+        self.set_parameter("full_path", None)
 
-        # Setup any user parameters required by this component
-        # 2nd arg is the default value, 3rd arg is optional list of choices
-        #self.set_parameter('MyParam', 'opt1', ['opt1', 'opt2', 'opt3'])
+        self.remove_input('in')
+        for i in range(n):
+            self.add_output('in{0}'.format(i))
 
         # log successful initialization message
         log.debug('Component Initialized: %s', self.__class__.__name__)
@@ -131,19 +138,30 @@ class MergeFlatsEvery(pypes.component.Component):
         # Define our components entry point
         while True:
 
-            # myparam = self.get_parameter('MyParam')
-
             # for each packet waiting on our input port
-            for packet in self.receive_all('in'):
+            n = self.get_parameter("n")
+            datasets = []
+            for i in range(n):
+                packet = self.receive("in{0}".format(i))
+                if not packet:
+                    log.error("%d packet is None!", i)
+                    continue
                 try:
-                    # perform your custom logic here
-                    pass
+                    data = packet.get("data")
+                    datasets.append(data)
                 except:
                     log.error('Component Failed: %s',
                               self.__class__.__name__, exc_info=True)
 
-                # send the packet to the next component
-                self.send('out', packet)
+            dataset = np.dstack(datasets)
+            packet = pypesvds.lib.packet.Packet()
+            packet.set("data", dataset)
+            packet.set("full_path",
+                       self.get_parameter("full_path"))
+            log.debug("%s: created dataset with shape %s",
+                      self.__class__.__name__, dataset.shape)
+            # send the packet to the next component
+            self.send('out', packet)
 
             # yield the CPU, allowing another component to run
             self.yield_ctrl()
