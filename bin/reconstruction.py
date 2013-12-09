@@ -12,7 +12,9 @@ log = logging.getLogger()
 import pypes.pipeline
 import pypesvds.lib.packet
 
+from pypes.component import HigherOrderComponent
 from dpc_reconstruction.commandline_parsers.basic import BasicParser
+from dpc_reconstruction.io.hdf5 import Hdf5Writer
 import dpc_reconstruction.networks.fourier_analysis as fca
 from dpc_reconstruction.version import get_setuptools_version
 
@@ -37,7 +39,16 @@ def main(file_names, flat_file_names, phase_steps,
     packet = pypesvds.lib.packet.Packet()
     packet.set('sample', file_names)
     packet.set('flat', flat_file_names)
-    network = fca.fourier_analysis_network_factory(phase_steps, overwrite)
+    fca_network = fca.fourier_analysis_network_factory(phase_steps)
+    fca_analyzer = HigherOrderComponent(fca_network)
+    file_writer = Hdf5Writer()
+    file_writer.set_parameter("group", "postprocessing")
+    file_writer.set_parameter("overwrite", overwrite)
+    network = {
+        fca_analyzer: {
+            file_writer: ("out", "in")
+        },
+    }
     pipeline = pypes.pipeline.Dataflow(network, n=jobs)
     log.debug("{0} {1}: analyzing {2} hdf5 files.".format(
         __name__, get_setuptools_version(), len(file_names)))

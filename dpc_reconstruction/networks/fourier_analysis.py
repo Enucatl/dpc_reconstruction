@@ -10,7 +10,6 @@ from dpc_reconstruction.stackers import Stacker
 from dpc_reconstruction.average import Average
 from dpc_reconstruction.stackers import PhaseStepsSplitter
 from dpc_reconstruction.phase_stepping import FourierAnalyzer
-from dpc_reconstruction.io.hdf5 import Hdf5Writer
 
 
 def fourier_components_network_factory(phase_steps, group="raw_images"):
@@ -48,7 +47,7 @@ def fourier_components_network_factory(phase_steps, group="raw_images"):
 
 
 def fourier_analysis_network_factory(phase_steps,
-                                     overwrite, group="raw_images"):
+                                     group="raw_images"):
     """Build the network for the reconstruction pipeline.
     - the flats and sample images are split and separately reconstructed by
       the same code (provided by the fourier_components_network_factory).
@@ -69,9 +68,6 @@ def fourier_analysis_network_factory(phase_steps,
     flat_average = Average()
 
     flat_sample_merger = MergeFlatSample()
-    file_writer = Hdf5Writer()
-    file_writer.set_parameter("group", "postprocessing")
-    file_writer.set_parameter("overwrite", overwrite)
     network = {
         flat_splitter: {
             sample_component_calculator: ('out', 'in'),
@@ -86,8 +82,5 @@ def fourier_analysis_network_factory(phase_steps,
         flat_average: {
             flat_sample_merger: ('out', 'in2')
         },
-        flat_sample_merger: {
-            file_writer: ('out', 'in'),
-        }
     }
     return network
