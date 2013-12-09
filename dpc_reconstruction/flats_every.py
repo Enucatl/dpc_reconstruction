@@ -22,7 +22,7 @@ def chunks(l, n):
         yield l[i:i + n]
 
 
-class SplitFlatSampleEvery(pypes.component.Component):
+class SplitFlatsEvery(pypes.component.Component):
     """
     mandatory input packet attributes:
     - None (only receives a trigger but the data is set up on
@@ -32,9 +32,9 @@ class SplitFlatSampleEvery(pypes.component.Component):
     - None
 
     parameters:
+    - files: list with all the files
     - flats_every: every how many files is a flat scan taken?
     - n_flats: n consecutive flats to average
-    - files: list with all the files
 
     output packet attributes:
     - many output ports: each group of files (with one flat) is sent to an
@@ -72,22 +72,22 @@ class SplitFlatSampleEvery(pypes.component.Component):
         while True:
 
             # receives only a trigger
-            _ = self.receive('in')
+            self.receive('in')
             try:
                 files = self.get_parameter("files")
                 flats_every = self.get_parameter("flats_every")
                 n_flats = self.get_parameter("n_flats")
                 n = flats_every + n_flats
-                for i, chunk in enumerate(chunks, files, n):
+                for i, chunk in enumerate(chunks(files, n)):
                     sample = chunk[:flats_every]
-                    flat = chunks[flats_every:flats_every + n_flats]
+                    flat = chunk[flats_every:flats_every + n_flats]
                     packet = pypesvds.lib.packet.Packet()
                     packet.set("sample", sample)
                     packet.set("flat", flat)
-                    log.debug("%s: created sample dataset with shape %s",
-                              self.__class__.__name__, sample.shape)
-                    log.debug("%s: created flat dataset with shape %s",
-                              self.__class__.__name__, flat.shape)
+                    log.debug("%s: sample list with %d files",
+                              self.__class__.__name__, len(sample))
+                    log.debug("%s: flat list with %d files",
+                              self.__class__.__name__, len(flat))
                     port = "out{0}".format(i)
                     self.send(port, packet)
             except:
@@ -129,7 +129,7 @@ class MergeFlatsEvery(pypes.component.Component):
 
         self.remove_input('in')
         for i in range(n):
-            self.add_output('in{0}'.format(i))
+            self.add_input('in{0}'.format(i))
 
         # log successful initialization message
         log.debug('Component Initialized: %s', self.__class__.__name__)
@@ -153,15 +153,16 @@ class MergeFlatsEvery(pypes.component.Component):
                     log.error('Component Failed: %s',
                               self.__class__.__name__, exc_info=True)
 
-            dataset = np.dstack(datasets)
-            packet = pypesvds.lib.packet.Packet()
-            packet.set("data", dataset)
-            packet.set("full_path",
-                       self.get_parameter("full_path"))
-            log.debug("%s: created dataset with shape %s",
-                      self.__class__.__name__, dataset.shape)
-            # send the packet to the next component
-            self.send('out', packet)
+            if datasets:
+                dataset = np.dstack(datasets)
+                packet = pypesvds.lib.packet.Packet()
+                packet.set("data", dataset)
+                packet.set("full_path",
+                           self.get_parameter("full_path"))
+                log.debug("%s: created dataset with shape %s",
+                          self.__class__.__name__, dataset.shape)
+                # send the packet to the next component
+                self.send('out', packet)
 
             # yield the CPU, allowing another component to run
             self.yield_ctrl()

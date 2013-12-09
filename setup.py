@@ -45,6 +45,7 @@ setup(
         "bin/shadobox2hdf5.py",
         "bin/visibility.py",
         "bin/reconstruction.py",
+        "bin/flats_every.py",
     ],
 
     install_requires=[

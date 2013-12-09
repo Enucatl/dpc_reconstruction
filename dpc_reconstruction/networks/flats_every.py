@@ -6,7 +6,7 @@ with flats every flats_every scans
 import dpc_reconstruction.networks.fourier_analysis as fca
 from pypes.component import HigherOrderComponent
 from dpc_reconstruction.io.hdf5 import output_name
-from dpc_reconstruction.flats_every import SplitFlatSampleEvery
+from dpc_reconstruction.flats_every import SplitFlatsEvery
 from dpc_reconstruction.flats_every import MergeFlatsEvery
 
 
@@ -25,7 +25,7 @@ def flats_every_network_factory(files, flats_every,
     :returns: the network in the dictionary format
 
     """
-    splitter = SplitFlatSampleEvery(files, flats_every, n_flats)
+    splitter = SplitFlatsEvery(files, flats_every, n_flats)
     network = {splitter: {}}
     n = len(files) // (flats_every + n_flats)
     merger = MergeFlatsEvery(n)
