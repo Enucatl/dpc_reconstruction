@@ -4,7 +4,7 @@
 
 from pypes.component import HigherOrderComponent
 from dpc_reconstruction.io.hdf5 import Hdf5Reader
-from dpc_reconstruction.split_flats import SplitFlats
+from dpc_reconstruction.split_flats import SplitFlatSample
 from dpc_reconstruction.split_flats import MergeFlatSample
 from dpc_reconstruction.stackers import Stacker
 from dpc_reconstruction.average import Average
@@ -61,7 +61,7 @@ def fourier_analysis_network_factory(phase_steps,
     :group: group for the raw images in the HDF5 files
     :returns: the network in the dictionary format
     """
-    flat_splitter = SplitFlats()
+    flat_splitter = SplitFlatSample()
     flat_component_calculator = HigherOrderComponent(
         fourier_components_network_factory(phase_steps, group))
     sample_component_calculator = HigherOrderComponent(

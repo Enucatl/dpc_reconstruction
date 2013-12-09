@@ -11,7 +11,7 @@ import pypes.component
 log = logging.getLogger(__name__)
 
 
-class SplitFlats(pypes.component.Component):
+class SplitFlatSample(pypes.component.Component):
     """
     Send the flat data to the out2 port and the sample data to the out port.
 
@@ -79,7 +79,7 @@ class MergeFlatSample(pypes.component.Component):
         - None
 
     output packet attributes:
-        - output attribute:
+        - data: the sample combined with the flat after division/subtraction
 
     """
 
