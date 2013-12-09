@@ -2,6 +2,7 @@
 
 """
 
+from pypes.component import HigherOrderComponent
 from dpc_reconstruction.io.hdf5 import Hdf5Reader
 from dpc_reconstruction.split_flats import SplitFlats
 from dpc_reconstruction.split_flats import MergeFlatSample
@@ -12,29 +13,59 @@ from dpc_reconstruction.phase_stepping import FourierAnalyzer
 from dpc_reconstruction.io.hdf5 import Hdf5Writer
 
 
+def fourier_components_network_factory(phase_steps, group="raw_images"):
+    """Subnetwork that needs to be performed on both the sample and flat
+    data:
+        - read the HDF5 files
+        - stack the datasets
+        - split according to the number of phase steps
+        - fourier transform and keep three signals
+
+    :phase_steps: the number of phase steps
+    :group: group for the raw images in the HDF5 files
+    :returns: the network in the dictionary format
+
+    """
+    reader = Hdf5Reader()
+    reader.__metatype__ = "TRANSFORMER"
+    reader.set_parameter("group", group)
+    stacker = Stacker()
+    step_splitter = PhaseStepsSplitter()
+    step_splitter.set_parameter('phase_steps', phase_steps)
+    fourier_analyzer = FourierAnalyzer()
+    network = {
+        reader: {
+            stacker: ('out', 'in'),
+        },
+        stacker: {
+            step_splitter: ('out', 'in'),
+        },
+        step_splitter: {
+            fourier_analyzer: ('out', 'in'),
+        },
+    }
+    return network
+
+
 def fourier_analysis_network_factory(phase_steps,
                                      overwrite, group="raw_images"):
     """Build the network for the reconstruction pipeline.
+    - the flats and sample images are split and separately reconstructed by
+      the same code (provided by the fourier_components_network_factory).
+    - the flats are averaged
+    - the sample data are merged with the flat data (division/subtraction)
+    - the final images are saved to an output HDF5 file.
+
+    :phase_steps: the number of phase steps
+    :overwrite: overwrite the output dataset if it already exists
+    :group: group for the raw images in the HDF5 files
+    :returns: the network in the dictionary format
     """
     flat_splitter = SplitFlats()
-
-    sample_reader = Hdf5Reader()
-    flat_reader = Hdf5Reader()
-    sample_reader.__metatype__ = "TRANSFORMER"
-    flat_reader.__metatype__ = "TRANSFORMER"
-    sample_reader.set_parameter("group", group)
-    flat_reader.set_parameter("group", group)
-
-    sample_stacker = Stacker()
-    flat_stacker = Stacker()
-
-    sample_step_splitter = PhaseStepsSplitter()
-    flat_step_splitter = PhaseStepsSplitter()
-    sample_step_splitter.set_parameter('phase_steps', phase_steps)
-    flat_step_splitter.set_parameter('phase_steps', phase_steps)
-
-    sample_fourier_analyzer = FourierAnalyzer()
-    flat_fourier_analyzer = FourierAnalyzer()
+    flat_component_calculator = HigherOrderComponent(
+        fourier_components_network_factory(phase_steps, group))
+    sample_component_calculator = HigherOrderComponent(
+        fourier_components_network_factory(phase_steps, group))
     flat_average = Average()
 
     flat_sample_merger = MergeFlatSample()
@@ -43,31 +74,13 @@ def fourier_analysis_network_factory(phase_steps,
     file_writer.set_parameter("overwrite", overwrite)
     network = {
         flat_splitter: {
-            sample_reader: ('out', 'in'),
-            flat_reader: ('out2', 'in'),
+            sample_component_calculator: ('out', 'in'),
+            flat_component_calculator: ('out2', 'in'),
         },
-        sample_reader: {
-            sample_stacker: ('out', 'in'),
-        },
-        sample_stacker: {
-            sample_step_splitter: ('out', 'in'),
-        },
-        sample_step_splitter: {
-            sample_fourier_analyzer: ('out', 'in'),
-        },
-        flat_reader: {
-            flat_stacker: ('out', 'in'),
-        },
-        flat_stacker: {
-            flat_step_splitter: ('out', 'in'),
-        },
-        flat_step_splitter: {
-            flat_fourier_analyzer: ('out', 'in'),
-        },
-        sample_fourier_analyzer: {
+        sample_component_calculator: {
             flat_sample_merger: ('out', 'in'),
         },
-        flat_fourier_analyzer: {
+        flat_component_calculator: {
             flat_average: ('out', 'in')
         },
         flat_average: {
