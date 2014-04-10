@@ -10,7 +10,7 @@ from dpc_reconstruction.logger_config import config_dictionary
 log = logging.getLogger()
 
 import pypes.pipeline
-import pypesvds.lib.packet
+import pypes.packet.packet
 
 from pypes.component import HigherOrderComponent
 from dpc_reconstruction.commandline_parsers.basic import BasicParser
@@ -36,7 +36,7 @@ commandline_parser.add_argument('--steps', '-s',
 def main(file_names, flat_file_names, phase_steps,
          overwrite=False, jobs=1):
     """show on screen if not batch"""
-    packet = pypesvds.lib.packet.Packet()
+    packet = pypes.packet.packet.Packet()
     packet.set('sample', file_names)
     packet.set('flat', flat_file_names)
     fca_network = fca.fourier_analysis_network_factory(phase_steps)

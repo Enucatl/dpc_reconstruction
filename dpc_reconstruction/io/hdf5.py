@@ -10,7 +10,7 @@ import h5py
 import os
 
 import pypes.component
-import pypesvds.lib.packet
+import pypes.packet.packet
 
 log = logging.getLogger(__name__)
 
@@ -130,7 +130,7 @@ class Hdf5Reader(pypes.component.Component):
             file_names = list(self.receive_all('in'))
             datasets = []
             group_name = self.get_parameter("group")
-            packet = pypesvds.lib.packet.Packet()
+            packet = pypes.packet.packet.Packet()
             for file_name in file_names:
                 try:
                     log.debug('{0} reading file {1}'.format(

@@ -8,7 +8,7 @@ import logging
 import os
 
 import pypes.component
-import pypesvds.lib.packet
+import pypes.packet.packet
 
 log = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class FileReader(pypes.component.Component):
         while True:
             file_name = self.receive("in")
             mode = self.get_parameter("mode")
-            packet = pypesvds.lib.packet.Packet()
+            packet = pypes.packet.packet.Packet()
             try:
                 full_path = os.path.abspath(file_name)
                 if not os.path.exists(full_path):

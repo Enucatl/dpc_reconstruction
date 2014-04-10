@@ -41,7 +41,7 @@ def call_git_describe(abbrev=4):
         p = Popen(['git', 'describe', '--dirty', '--abbrev=%d' % abbrev],
                   stdout=PIPE, stderr=PIPE)
         p.stderr.close()
-        line = p.stdout.readlines()[0]
+        line = p.stdout.readlines()[0].decode()
         return line.strip()
 
     except:
@@ -64,9 +64,8 @@ def read_release_version():
 
 
 def write_release_version(version):
-    f = open("RELEASE-VERSION", "w")
-    f.write("%s\n" % version)
-    f.close()
+    with open("RELEASE-VERSION", "w") as f:
+        f.write("%s\n" % version)
 
 
 def get_git_version(abbrev=4):
@@ -107,4 +106,4 @@ def get_setuptools_version():
 
 
 if __name__ == "__main__":
-    print get_git_version()
+    print(get_git_version())

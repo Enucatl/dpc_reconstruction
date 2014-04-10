@@ -1,40 +1,9 @@
 # pylint: disable=all
 
-from distribute_setup import use_setuptools
-use_setuptools()
-
 from setuptools import setup, find_packages
 from version import get_git_version
 from subprocess import check_output
 
-
-def get_entry_points():
-    """Get the names of all the classes inheriting from
-    pypes.component.Component with some recursive grep magic.
-
-    This is useful for installing the python egg for pypesvds so that the
-    components can be used with the gui server.
-
-    """
-    command = r'''
-    grep -rI "class \(.*\)(pypes.component.*Component):" dpc_reconstruction\
-    | sed 's/.py:class /:/'\
-    | sed 's:/:.:g'\
-    | sed 's/(pypes.component.*Component)://'\
-    | sed 's/\(.*\):\(.*\)/\2 = \1:\2/' '''
-    result = check_output(command, shell=True)
-    print(result)
-    ini_config = '''
-        [pypesvds.plugins]
-{0}
-        [distutils.setup_keywords]
-        paster_plugins = setuptools.dist:assert_string_list
-
-        [egg_info.writers]
-        paster_plugins.txt = setuptools.command.egg_info:write_arg
-    '''.format(result)
-    print(ini_config)
-    return ini_config
 
 setup(
     name="dpc_reconstruction",
@@ -49,19 +18,16 @@ setup(
     ],
 
     install_requires=[
-        'numpy==1.7.1',
-        'h5py==2.2.0',
-        'matplotlib==1.3.1',
-        'pypes==1.2',
-        'pypesvds==1.1.0',
+        'numpy',
+        'h5py',
+        'matplotlib',
+        'pypes',
     ],
 
     package_data={
         # If any package contains *.txt or *.rst files, include them:
         '': ['*.txt', '*.rst'],
     },
-
-    entry_points=get_entry_points(),
 
     # metadata for upload to PyPI
     author="TOMCAT DPC group",
