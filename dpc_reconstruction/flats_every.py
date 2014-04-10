@@ -9,7 +9,7 @@ import logging
 import numpy as np
 
 import pypes.component
-import pypes.packet.packet
+import pypes.packet
 
 log = logging.getLogger(__name__)
 
@@ -81,7 +81,7 @@ class SplitFlatsEvery(pypes.component.Component):
                 for i, chunk in enumerate(chunks(files, n)):
                     sample = chunk[:flats_every]
                     flat = chunk[flats_every:flats_every + n_flats]
-                    packet = pypes.packet.packet.Packet()
+                    packet = pypes.packet.Packet()
                     packet.set("sample", sample)
                     packet.set("flat", flat)
                     log.debug("%s: sample list with %d files",
@@ -155,7 +155,7 @@ class MergeFlatsEvery(pypes.component.Component):
 
             if datasets:
                 dataset = np.dstack(datasets)
-                packet = pypes.packet.packet.Packet()
+                packet = pypes.packet.Packet()
                 packet.set("data", dataset)
                 packet.set("full_path",
                            self.get_parameter("full_path"))

@@ -6,19 +6,19 @@ from __future__ import division, print_function
 
 import logging
 import logging.config
+import dpc_reconstruction
 from dpc_reconstruction.logger_config import config_dictionary
 log = logging.getLogger()
 
 import pypes.pipeline
-import pypes.packet.packet
+import pypes.packet
 
 from pypes.component import HigherOrderComponent
 from dpc_reconstruction.commandline_parsers.basic import BasicParser
 from dpc_reconstruction.io.hdf5 import Hdf5Writer
 import dpc_reconstruction.networks.fourier_analysis as fca
-from dpc_reconstruction.version import get_setuptools_version
 
-description = "{1}\n\n{0}\n".format(get_setuptools_version(), __doc__)
+description = "{1}\n\n{0}\n".format(dpc_reconstruction.__version__, __doc__)
 commandline_parser = BasicParser(description=description)
 commandline_parser.add_argument('files',
                                 metavar='FILE(s)',
@@ -36,7 +36,7 @@ commandline_parser.add_argument('--steps', '-s',
 def main(file_names, flat_file_names, phase_steps,
          overwrite=False, jobs=1):
     """show on screen if not batch"""
-    packet = pypes.packet.packet.Packet()
+    packet = pypes.packet.Packet()
     packet.set('sample', file_names)
     packet.set('flat', flat_file_names)
     fca_network = fca.fourier_analysis_network_factory(phase_steps)
@@ -51,7 +51,7 @@ def main(file_names, flat_file_names, phase_steps,
     }
     pipeline = pypes.pipeline.Dataflow(network, n=jobs)
     log.debug("{0} {1}: analyzing {2} hdf5 files.".format(
-        __name__, get_setuptools_version(), len(file_names)))
+        __name__, dpc_reconstruction.__version__, len(file_names)))
     pipeline.send(packet)
     pipeline.close()
 

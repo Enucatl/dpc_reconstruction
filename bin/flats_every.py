@@ -7,6 +7,7 @@ from __future__ import division, print_function
 
 import logging
 import logging.config
+import dpc_reconstruction
 from dpc_reconstruction.logger_config import config_dictionary
 log = logging.getLogger()
 
@@ -16,9 +17,8 @@ from pypes.component import HigherOrderComponent
 from dpc_reconstruction.commandline_parsers.basic import BasicParser
 from dpc_reconstruction.io.hdf5 import Hdf5Writer
 import dpc_reconstruction.networks.flats_every as fe
-from dpc_reconstruction.version import get_setuptools_version
 
-description = "{1}\n\n{0}\n".format(get_setuptools_version(), __doc__)
+description = "{1}\n\n{0}\n".format(dpc_reconstruction.__version__, __doc__)
 commandline_parser = BasicParser(description=description)
 commandline_parser.add_argument('files',
                                 metavar='FILE(s)',
@@ -53,7 +53,7 @@ def main(files, flats_every, n_flats, phase_steps,
     }
     pipeline = pypes.pipeline.Dataflow(network, n=jobs)
     log.debug("{0} {1}: analyzing {2} hdf5 files.".format(
-        __name__, get_setuptools_version(), len(files)))
+        __name__, dpc_reconstruction.__version__, len(files)))
     pipeline.send(None)
     pipeline.close()
 

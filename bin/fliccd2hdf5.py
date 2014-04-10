@@ -9,16 +9,16 @@ from glob import glob
 
 import logging
 import logging.config
+import dpc_reconstruction
 from dpc_reconstruction.logger_config import config_dictionary
 log = logging.getLogger()
 
 import pypes.pipeline
 
 from dpc_reconstruction.networks.fliccd2hdf5 import fliccd2hdf5_factory
-from dpc_reconstruction.version import get_setuptools_version
 from dpc_reconstruction.commandline_parsers.basic import BasicParser
 
-description = "{1}\n\n{0}\n".format(get_setuptools_version(), __doc__)
+description = "{1}\n\n{0}\n".format(dpc_reconstruction.__version__, __doc__)
 commandline_parser = BasicParser(description=description)
 commandline_parser.add_argument('folder',
                                 metavar='FOLDER(s)',
@@ -43,7 +43,7 @@ def main(folders, overwrite=False, jobs=1, remove_source=False):
             raise OSError
         file_names = sorted(glob(os.path.join(folder, "*.raw")))
         log.debug("{0} {1}: converting {2} raw files.".format(
-            __name__, get_setuptools_version(), len(file_names)))
+            __name__, dpc_reconstruction.__version__, len(file_names)))
         for file_name in file_names:
             pipeline.send(file_name)
     pipeline.close()

@@ -16,7 +16,7 @@ config_dictionary['loggers']['']['level'] = 'DEBUG'
 logging.config.dictConfig(config_dictionary)
 
 import pypes.pype
-import pypes.packet.packet
+import pypes.packet
 
 
 @pytest.fixture(scope="function")
@@ -37,4 +37,4 @@ def pype_and_tasklet(request):
 
 @pytest.fixture(scope="function")
 def packet():
-    return pypes.packet.packet.Packet()
+    return pypes.packet.Packet()
