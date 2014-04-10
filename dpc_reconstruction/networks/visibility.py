@@ -2,8 +2,8 @@
 
 from __future__ import division, print_function
 
-from dpc_reconstruction.io.hdf5 import Hdf5Writer
-from dpc_reconstruction.io.hdf5 import Hdf5Reader
+from pypes.plugins.hdf5 import Hdf5Writer
+from pypes.plugins.hdf5 import Hdf5ReadGroup
 from dpc_reconstruction.stackers import Stacker
 from dpc_reconstruction.phase_stepping import FourierAnalyzer
 from dpc_reconstruction.visibility import VisibilityCalculator
@@ -18,7 +18,7 @@ def visibility_factory(overwrite, batch):
     :returns: the network as a dictionary
 
     """
-    file_reader = Hdf5Reader()
+    file_reader = Hdf5ReadGroup()
     stacker = Stacker()
     fourier_analyzer = FourierAnalyzer()
     visibility_calculator = VisibilityCalculator()

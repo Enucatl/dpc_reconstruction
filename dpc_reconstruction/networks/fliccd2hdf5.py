@@ -9,7 +9,7 @@ from dpc_reconstruction.io.file_reader import FileReader
 from dpc_reconstruction.io.fliccd_hedpc import FliRawReader
 from dpc_reconstruction.io.fliccd_hedpc import FliRawHeaderAnalyzer
 from dpc_reconstruction.io.fliccd_hedpc import FliRaw2Numpy
-from dpc_reconstruction.io.hdf5 import Hdf5Writer
+from pypes.plugins.hdf5 import Hdf5Writer
 
 
 def fliccd2hdf5_factory(overwrite, remove_source):

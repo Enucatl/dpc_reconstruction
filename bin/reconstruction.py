@@ -15,7 +15,7 @@ import pypes.packet
 
 from pypes.component import HigherOrderComponent
 from dpc_reconstruction.commandline_parsers.basic import BasicParser
-from dpc_reconstruction.io.hdf5 import Hdf5Writer
+from pypes.plugins.hdf5 import Hdf5Writer
 import dpc_reconstruction.networks.fourier_analysis as fca
 
 description = "{1}\n\n{0}\n".format(dpc_reconstruction.__version__, __doc__)
@@ -41,6 +41,7 @@ def main(file_names, flat_file_names, phase_steps,
     packet.set('flat', flat_file_names)
     fca_network = fca.fourier_analysis_network_factory(phase_steps)
     fca_analyzer = HigherOrderComponent(fca_network)
+    fca_analyzer.__metatype__ = "ADAPTER"
     file_writer = Hdf5Writer()
     file_writer.set_parameter("group", "postprocessing")
     file_writer.set_parameter("overwrite", overwrite)

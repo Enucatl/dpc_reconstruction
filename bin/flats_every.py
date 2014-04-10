@@ -15,7 +15,7 @@ import pypes.pipeline
 
 from pypes.component import HigherOrderComponent
 from dpc_reconstruction.commandline_parsers.basic import BasicParser
-from dpc_reconstruction.io.hdf5 import Hdf5Writer
+from pypes.plugins.hdf5 import Hdf5Writer
 import dpc_reconstruction.networks.flats_every as fe
 
 description = "{1}\n\n{0}\n".format(dpc_reconstruction.__version__, __doc__)

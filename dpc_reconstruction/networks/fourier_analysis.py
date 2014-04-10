@@ -3,7 +3,7 @@
 """
 
 from pypes.component import HigherOrderComponent
-from dpc_reconstruction.io.hdf5 import Hdf5Reader
+from pypes.plugins.hdf5 import Hdf5ReadGroup
 from dpc_reconstruction.split_flats import SplitFlatSample
 from dpc_reconstruction.split_flats import MergeFlatSample
 from dpc_reconstruction.stackers import Stacker
@@ -25,9 +25,8 @@ def fourier_components_network_factory(phase_steps, group="raw_images"):
     :returns: the network in the dictionary format
 
     """
-    reader = Hdf5Reader()
+    reader = Hdf5ReadGroup()
     reader.__metatype__ = "TRANSFORMER"
-    reader.set_parameter("group", group)
     stacker = Stacker()
     step_splitter = PhaseStepsSplitter()
     step_splitter.set_parameter('phase_steps', phase_steps)

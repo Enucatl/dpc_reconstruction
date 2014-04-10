@@ -49,15 +49,15 @@ class SplitFlatSample(pypes.component.Component):
         while True:
 
             # for each packet waiting on our input port
-            for packet in self.receive_all('in'):
-                try:
-                    for file_name in packet.get('sample'):
-                        self.send('out', file_name)
-                    for file_name in packet.get('flat'):
-                        self.send('out2', file_name)
-                except:
-                    log.error('Component Failed: %s', self.__class__.__name__,
-                              exc_info=True)
+            packet = self.receive("in")
+            try:
+                for file_name in packet.get('sample'):
+                    self.send('out', file_name)
+                for file_name in packet.get('flat'):
+                    self.send('out2', file_name)
+            except:
+                log.error('Component Failed: %s', self.__class__.__name__,
+                          exc_info=True)
 
             # yield the CPU, allowing another component to run
             self.yield_ctrl()

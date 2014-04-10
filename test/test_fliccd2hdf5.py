@@ -20,7 +20,7 @@ import pypes.component
 import pypes.pipeline
 
 from dpc_reconstruction.io.file_reader import FileReader
-from dpc_reconstruction.io.hdf5 import Hdf5Writer
+from pypes.plugins.hdf5 import Hdf5Writer
 from dpc_reconstruction.io.fliccd_hedpc import FliRawReader
 from dpc_reconstruction.io.fliccd_hedpc import FliRawHeaderAnalyzer
 from dpc_reconstruction.io.fliccd_hedpc import FliRaw2Numpy

@@ -11,7 +11,7 @@ import pypes.component
 
 log = logging.getLogger(__name__)
 
-from dpc_reconstruction.io.hdf5 import output_name
+from pypes.plugins.hdf5 import output_name
 
 
 class VisibilityCalculator(pypes.component.Component):

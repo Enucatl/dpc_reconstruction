@@ -17,7 +17,7 @@ import pypes.pipeline
 
 from dpc_reconstruction.io.file_reader import FileReader
 from dpc_reconstruction.io.shadobox import ShadoboxToNumpy
-from dpc_reconstruction.io.hdf5 import Hdf5Writer
+from pypes.plugins.hdf5 import Hdf5Writer
 
 from dpc_reconstruction.commandline_parsers.basic import BasicParser
 
