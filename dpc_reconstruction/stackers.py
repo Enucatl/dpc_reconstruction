@@ -63,13 +63,17 @@ class Stacker(pypes.component.Component):
         while True:
             # for each packet waiting on our input port
             packets = list(self.receive_all("in"))
+            log.debug("%s received %d packets",
+                      self.__class__.__name__,
+                      len(packets))
             try:
                 datasets = flatten([packet.get("data")
                                     for packet in packets])
                 file_names = flatten([packet.get("file_name")
                                       for packet in packets])
-                log.debug('{0} datasets found with shape {1}'.format(
-                    self.__class__.__name__, datasets[0].shape))
+                log.debug('%s datasets found with shape %s',
+                          self.__class__.__name__,
+                          datasets[0].shape)
                 data = np.dstack(datasets)
                 packet = pypes.packet.Packet()
                 packet.set("data", data)
