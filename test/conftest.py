@@ -17,6 +17,7 @@ logging.config.dictConfig(config_dictionary)
 
 import pypes.pype
 import pypes.packet
+import pypes.scheduler
 
 
 @pytest.fixture(scope="function")
@@ -31,8 +32,8 @@ def pype_and_tasklet(request):
     component.connect_input("in", pype)
     if component.has_port("out"):
         component.connect_output("out", pype)
-    tasklet = stackless.tasklet(component.run)()
-    return pype, tasklet, component
+    tasks = pypes.scheduler.schedule_recursively([component])
+    return pype, tasks[0], component
 
 
 @pytest.fixture(scope="function")
