@@ -5,7 +5,7 @@ with flats every flats_every scans
 
 import dpc_reconstruction.networks.fourier_analysis as fca
 from pypes.component import HigherOrderComponent
-from dpc_reconstruction.io.hdf5 import output_name
+from pypes.plugins.hdf5 import output_name
 from dpc_reconstruction.flats_every import SplitFlatsEvery
 from dpc_reconstruction.flats_every import MergeFlatsEvery
 

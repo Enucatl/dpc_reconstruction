@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
-"""Reconstruct the DPC signals with multiple flats take every flats_every
-scans"""
+"""Reconstruct the DPC signals with multiple flats taken every flats_every
+files"""
 
 from __future__ import division, print_function
 

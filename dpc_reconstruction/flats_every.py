@@ -78,6 +78,7 @@ class SplitFlatsEvery(pypes.component.Component):
                 flats_every = self.get_parameter("flats_every")
                 n_flats = self.get_parameter("n_flats")
                 n = flats_every + n_flats
+                log.debug('splitting into %d groups', len(files) // n)
                 for i, chunk in enumerate(chunks(files, n)):
                     sample = chunk[:flats_every]
                     flat = chunk[flats_every:flats_every + n_flats]
@@ -161,6 +162,8 @@ class MergeFlatsEvery(pypes.component.Component):
                            self.get_parameter("full_path"))
                 log.debug("%s: created dataset with shape %s",
                           self.__class__.__name__, dataset.shape)
+                log.debug("and full path %s",
+                          self.get_parameter("full_path"))
                 # send the packet to the next component
                 self.send('out', packet)
 

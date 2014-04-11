@@ -54,14 +54,14 @@ class SplitFlatSample(pypes.component.Component):
             try:
                 for file_name in packet.get('sample'):
                     new_packet = pypes.packet.Packet()
-                    packet.set("file_name", file_name)
-                    packet.set("data", "/")
-                    self.send('out', packet)
+                    new_packet.set("file_name", file_name)
+                    new_packet.set("data", "raw_images")
+                    self.send('out', new_packet)
                 for file_name in packet.get('flat'):
                     new_packet = pypes.packet.Packet()
-                    packet.set("file_name", file_name)
-                    packet.set("data", "/")
-                    self.send('out2', file_name)
+                    new_packet.set("file_name", file_name)
+                    new_packet.set("data", "raw_images")
+                    self.send('out2', new_packet)
             except:
                 log.error('Component Failed: %s', self.__class__.__name__,
                           exc_info=True)
