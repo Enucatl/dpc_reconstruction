@@ -129,13 +129,23 @@ class MergeFlatSample(pypes.component.Component):
                     sample[..., 0] /= a0_flat
                     sample[..., 1] -= phi_flat
                     sample[..., 2] /= a1_flat / sample[..., 0]
-                    #unwrap the phase values
+                    # unwrap the phase values
                     sample[..., 1] = np.mod(
                         sample[..., 1] + np.pi, 2 * np.pi) - np.pi
                     sample_packet.set('data', sample)
+                    visibility_map = np.tile(
+                        2 * a1_flat / a0_flat,
+                        (1, 1, sample.shape[2]))
+                    sample_packet.set('visibility', visibility_map)
                     log.debug('''%s: merged flat and data and unwrapped the
                     phase values. Created dataset with shape %s''',
                               self.__class__.__name__, sample.shape)
+                    log.debug(
+                        'shapes sample %s, visibility %s, parameters %s',
+                        sample.shape, visibility_map.shape, a0_flat.shape)
+                    log.debug(
+                        'phase stepping curves shape %s',
+                        sample_packet.get("phase stepping curves").shape)
                 except:
                     log.error('Component Failed: %s', self.__class__.__name__,
                               exc_info=True)

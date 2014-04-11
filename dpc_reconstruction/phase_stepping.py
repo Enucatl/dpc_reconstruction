@@ -83,6 +83,7 @@ class FourierAnalyzer(pypes.component.Component):
                     data = packet.get("data")
                     signals = get_signals(data, n_periods=n_periods)
                     packet.set("data", signals)
+                    packet.set("phase stepping curves", data)
                     log.debug('{0} created a dataset with shape {1}'.format(
                         self.__class__.__name__, signals.shape))
                 except:
