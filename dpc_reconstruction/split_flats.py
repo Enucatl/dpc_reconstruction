@@ -50,10 +50,17 @@ class SplitFlatSample(pypes.component.Component):
 
             # for each packet waiting on our input port
             packet = self.receive("in")
+
             try:
                 for file_name in packet.get('sample'):
-                    self.send('out', file_name)
+                    new_packet = pypes.packet.Packet()
+                    packet.set("file_name", file_name)
+                    packet.set("data", "/")
+                    self.send('out', packet)
                 for file_name in packet.get('flat'):
+                    new_packet = pypes.packet.Packet()
+                    packet.set("file_name", file_name)
+                    packet.set("data", "/")
                     self.send('out2', file_name)
             except:
                 log.error('Component Failed: %s', self.__class__.__name__,
@@ -99,8 +106,6 @@ class MergeFlatSample(pypes.component.Component):
     def run(self):
         # Define our components entry point
         while True:
-
-            # myparam = self.get_parameter('MyParam')
 
             # for each packet waiting on our input port
             flat_packet = self.receive('in2')

@@ -56,11 +56,6 @@ class VisibilityCalculator(pypes.component.Component):
                     data = packet.get("data")
                     visibility = 2 * data[..., 2] / data[..., 0]
                     packet.set("data", visibility)
-                    files = packet.get("file_names")
-                    output_file_name = output_name(
-                        files, self.__class__.__name__)
-                    packet.delete("file_names")
-                    packet.set("full_path", output_file_name)
                     log.debug('{0} created a dataset with shape {1}'.format(
                         self.__class__.__name__, visibility.shape))
                 except:

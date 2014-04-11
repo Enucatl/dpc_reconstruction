@@ -13,6 +13,7 @@ from dpc_reconstruction.logger_config import config_dictionary
 log = logging.getLogger()
 
 import pypes.pipeline
+import pypes.packet
 
 from dpc_reconstruction.networks.visibility import visibility_factory
 from dpc_reconstruction.commandline_parsers.basic import BasicParser
@@ -37,7 +38,10 @@ def main(file_names, overwrite=False, jobs=1,
             log.error("{0}: file {1} not found!".format(
                 __name__, file_name))
             raise OSError
-        pipeline.send(file_name)
+        packet = pypes.packet.Packet()
+        packet.set("file_name", file_name)
+        packet.set("data", "raw_images")
+        pipeline.send(packet)
     pipeline.close()
 
 if __name__ == '__main__':
