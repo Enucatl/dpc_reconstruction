@@ -22,9 +22,6 @@ def visibility_factory(overwrite, batch):
     stacker = Stacker()
     fourier_analyzer = FourierAnalyzer()
     visibility_calculator = VisibilityCalculator()
-    file_writer = Hdf5Writer()
-    file_writer.set_parameter("group", "postprocessing")
-    file_writer.set_parameter("overwrite", overwrite)
     network = {
         file_reader: {
             stacker: ('out', 'in'),
@@ -34,9 +31,6 @@ def visibility_factory(overwrite, batch):
         },
         fourier_analyzer: {
             visibility_calculator: ('out', 'in'),
-        },
-        visibility_calculator: {
-            file_writer: ('out', 'in'),
         },
     }
     return network

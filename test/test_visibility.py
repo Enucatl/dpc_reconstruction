@@ -43,10 +43,17 @@ class TestFliccd2Hdf5(object):
 
     def test_visibility_network(self, pype_and_tasklet, packet):
         pype, tasklet, _ = pype_and_tasklet
-        packet.set("file_name", "visibility_test_data.hdf5")
+        file_name = "visibility_test_data.hdf5"
+        packet.set("file_name", file_name)
         packet.set("data", "raw_images")
         pype.send(packet)
         tasklet.run()
         data = pype.recv()
-        assert data.get("data") == "ciap"
+        h5file = h5py.File(file_name)
+        old_visibility_result = h5file["postprocessing/visibility_505"][1,
+                                                                        :]
+        h5file.close()
+        result = data.get("data")[0, 300:800]
+        print(old_visibility_result.shape, result.shape)
+        assert (result == old_visibility_result).all()
     test_visibility_network.component = VisibilityNetwork

@@ -14,6 +14,7 @@ log = logging.getLogger()
 
 import pypes.pipeline
 import pypes.packet
+import pypes.component
 
 from dpc_reconstruction.networks.visibility import visibility_factory
 from dpc_reconstruction.commandline_parsers.basic import BasicParser
@@ -29,7 +30,16 @@ commandline_parser.add_argument('files',
 def main(file_names, overwrite=False, jobs=1,
          batch=True):
     """show on screen if not batch"""
-    network = visibility_factory(overwrite, batch)
+    vis_network = visibility_factory(overwrite, batch)
+    file_writer = Hdf5Writer()
+    file_writer.set_parameter("group", "postprocessing")
+    file_writer.set_parameter("overwrite", overwrite)
+    visibility_calculator = pypes.component.HigherOrderComponent(vis_network)
+    network = {
+        visibility_calculator: {
+            file_writer: ("out", "in"),
+        },
+    }
     pipeline = pypes.pipeline.Dataflow(network, n=jobs)
     log.debug("{0} {1}: analyzing {2} hdf5 files.".format(
         __name__, dpc_reconstruction.__version__, len(file_names)))
