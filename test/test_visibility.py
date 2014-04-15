@@ -38,8 +38,8 @@ class VisibilityNetwork(pypes.component.HigherOrderComponent):
 
 @pytest.mark.usefixtures("packet")
 @pytest.mark.usefixtures("pype_and_tasklet")
-class TestFliccd2Hdf5(object):
-    """Test all the components of the make hdf5 pipeline."""
+class TestVisibility(object):
+    """Test the visibility pipeline."""
 
     def test_visibility_network(self, pype_and_tasklet, packet):
         pype, tasklet, _ = pype_and_tasklet
@@ -50,8 +50,8 @@ class TestFliccd2Hdf5(object):
         tasklet.run()
         data = pype.recv()
         h5file = h5py.File(file_name)
-        old_visibility_result = h5file["postprocessing/visibility_505"][1,
-                                                                        :]
+        old_visibility_result = h5file[
+            "postprocessing/visibility_505"][1, :]
         h5file.close()
         result = data.get("data")[0, 300:800]
         print(old_visibility_result.shape, result.shape)
