@@ -16,6 +16,7 @@ import pypes.pipeline
 import pypes.packet
 import pypes.component
 
+from pypes.plugins.name_changer import NameChanger
 from dpc_reconstruction.networks.visibility import visibility_factory
 from dpc_reconstruction.commandline_parsers.basic import BasicParser
 
@@ -32,11 +33,17 @@ def main(file_names, overwrite=False, jobs=1,
     """show on screen if not batch"""
     vis_network = visibility_factory(overwrite, batch)
     file_writer = Hdf5Writer()
+    name_changer = NameChanger({
+        "data": "visibility",
+    })
     file_writer.set_parameter("group", "postprocessing")
     file_writer.set_parameter("overwrite", overwrite)
     visibility_calculator = pypes.component.HigherOrderComponent(vis_network)
     network = {
         visibility_calculator: {
+            name_changer: ("out", "in"),
+        },
+        name_changer: {
             file_writer: ("out", "in"),
         },
     }

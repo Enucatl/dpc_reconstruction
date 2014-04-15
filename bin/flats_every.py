@@ -16,6 +16,7 @@ import pypes.pipeline
 from pypes.component import HigherOrderComponent
 from dpc_reconstruction.commandline_parsers.basic import BasicParser
 from pypes.plugins.hdf5 import Hdf5Writer
+from pypes.plugins.name_changer import NameChanger
 import dpc_reconstruction.networks.flats_every as fe
 
 description = "{1}\n\n{0}\n".format(dpc_reconstruction.__version__, __doc__)
@@ -44,11 +45,17 @@ def main(files, flats_every, n_flats, phase_steps,
                                                 n_flats, phase_steps)
     fe_analyzer = HigherOrderComponent(fe_network)
     file_writer = Hdf5Writer()
+    name_changer = NameChanger({
+        "data": "dpc_reconstruction",
+    })
     file_writer.set_parameter("group", "postprocessing")
     file_writer.set_parameter("overwrite", overwrite)
     network = {
         fe_analyzer: {
-            file_writer: ("out", "in")
+            name_changer: ("out", "in"),
+        },
+        name_changer: {
+            file_writer: ("out", "in"),
         },
     }
     pipeline = pypes.pipeline.Dataflow(network, n=jobs)

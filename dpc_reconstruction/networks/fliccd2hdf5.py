@@ -9,6 +9,7 @@ from dpc_reconstruction.io.file_reader import FileReader
 from dpc_reconstruction.io.fliccd_hedpc import FliRawReader
 from dpc_reconstruction.io.fliccd_hedpc import FliRawHeaderAnalyzer
 from dpc_reconstruction.io.fliccd_hedpc import FliRaw2Numpy
+from dpc_reconstruction.io.fliccd_hedpc import FileName2DatasetName
 from pypes.plugins.hdf5 import Hdf5Writer
 
 
@@ -25,6 +26,7 @@ def fliccd2hdf5_factory(overwrite, remove_source):
     fliraw_reader = FliRawReader()
     header_analyzer = FliRawHeaderAnalyzer()
     numpy_converter = FliRaw2Numpy()
+    file_name = FileName2DatasetName()
     hdf_writer = Hdf5Writer()
     hdf_writer.set_parameter("overwrite", overwrite)
     FliRawReader.__metatype__ = "TRANSFORMER"
@@ -39,6 +41,9 @@ def fliccd2hdf5_factory(overwrite, remove_source):
             numpy_converter: ('out', 'in'),
         },
         numpy_converter: {
+            file_name: ('out', 'in'),
+        },
+        file_name: {
             hdf_writer: ('out', 'in'),
         },
     }

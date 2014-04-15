@@ -5,6 +5,7 @@ Read the RAW images saved by the CCD FLI camera in OFLG/U210
 from __future__ import division, print_function
 
 import logging
+import os
 
 import numpy as np
 import pypes.component
@@ -21,6 +22,7 @@ class FliRawReader(pypes.component.Component):
 
     mandatory input packet attributes:
         - data: the binary contents of the file
+        - file_name: the file file name
 
     optional input packet attributes:
         - None
@@ -29,6 +31,7 @@ class FliRawReader(pypes.component.Component):
         - None
 
     output packet attributes:
+        - file_name: the file name of the output hdf5 file
         - data: raw binary string containing only the image data
           (dtype=uint16), without the header
         - header: string containing the header only
@@ -47,6 +50,9 @@ class FliRawReader(pypes.component.Component):
         while True:
             packet = self.receive("in")
             data = packet.get('data')
+            file_name = packet.get("file_name")
+            packet.set("file_name",
+                       os.path.dirname(file_name) + ".hdf5")
             if data is None:
                 self.yield_ctrl()
                 continue
@@ -163,11 +169,59 @@ class FliRaw2Numpy(pypes.component.Component):
                     np.fromstring(packet.get("data"), dtype=np.uint16),
                     (max_y - min_y, max_x - min_x),
                     order='F')
-                log.debug("{0}: image with shape {1}".format(
-                    self.__class__.__name__, image.shape))
+                log.debug("%s: image with shape %s",
+                          self.__class__.__name__,
+                          image.shape)
                 packet.set("data", image)
             except:
                 log.error('Component Failed: %s', self.__class__.__name__,
+                          exc_info=True)
+            # send the document to the next component
+            self.send("out", packet)
+            # yield the CPU, allowing another component to run
+            self.yield_ctrl()
+
+
+class FileName2DatasetName(pypes.component.Component):
+
+    """Get the file name and turn it into the dataset name
+
+    mandatory input packet attributes:
+        - data: the image raw binary string
+        - file_name: the file name of the input
+
+    optional input packet attributes:
+        - None
+
+    parameters:
+        - None
+
+    output packet attributes:
+        - [file_name]: the image as a 2D numpy array with the file_name as
+          key
+
+    """
+
+    __metatype__ = "TRANSFORMER"
+
+    def __init__(self):
+        pypes.component.Component.__init__(self)
+        # log successful initialization message
+        log.debug('Component Initialized: {0}'.format(
+            self.__class__.__name__))
+
+    def run(self):
+        while True:
+            packet = self.receive('in')
+            try:
+                file_name = os.path.basename(
+                    packet.get("file_name"))
+                packet.set(file_name,
+                           packet.get("data"))
+                packet.delete("data")
+            except:
+                log.error('Component Failed: %s',
+                          self.__class__.__name__,
                           exc_info=True)
             # send the document to the next component
             self.send("out", packet)

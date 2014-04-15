@@ -59,13 +59,13 @@ class TestFliccd2Hdf5(object):
         pype, tasklet, component = pype_and_tasklet
         component.set_parameter("overwrite", True)
         random_image = np.random.rand(5, 25)
-        packet.set("file_name", input_file_name)
-        packet.set("data", random_image)
-        pype.send(packet)
-        tasklet.run()
         output_hdf5, dataset_name = os.path.split(input_file_name)
         output_hdf5 += ".hdf5"
-        dataset_name = os.path.splitext(dataset_name)[0]
+        packet.set("file_name", output_hdf5)
+        packet.set(dataset_name, random_image)
+        pype.send(packet)
+        tasklet.run()
+        print("test output, dataset:", output_hdf5, dataset_name)
         output_file = h5py.File(output_hdf5)
         output_group = output_file[
             component.get_parameter("group")]
@@ -80,6 +80,7 @@ class TestFliccd2Hdf5(object):
         pype, tasklet, _ = pype_and_tasklet
         content = open(input_file_name, "rb").read()
         packet.set("data", content)
+        packet.set("file_name", input_file_name)
         pype.send(packet)
         tasklet.run()
         output = pype.recv()
