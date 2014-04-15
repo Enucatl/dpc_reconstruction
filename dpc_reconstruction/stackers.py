@@ -77,9 +77,8 @@ class Stacker(pypes.component.Component):
                 data = np.dstack(datasets)
                 packet = pypes.packet.Packet()
                 packet.set("data", data)
-                output_file_name = output_name(
-                    file_names, self.__class__.__name__)
-                packet.set("full_path", output_file_name)
+                output_file_name = output_name(file_names)
+                packet.set("file_name", output_file_name)
 
                 #add info from first dataset
                 for key, value in datasets[0].attrs.items():

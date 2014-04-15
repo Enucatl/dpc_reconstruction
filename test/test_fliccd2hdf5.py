@@ -50,7 +50,7 @@ class TestFliccd2Hdf5(object):
         tasklet.run()
         data = pype.recv()
         assert data.get("data") == open(input_file_name, "rb").read()
-        assert data.get("full_path") == os.path.abspath(input_file_name)
+        assert data.get("file_name") == os.path.abspath(input_file_name)
     test_file_reader.component = FileReader
 
     @pytest.mark.parametrize("input_file_name", TEST_INPUT_FILES)
@@ -59,7 +59,7 @@ class TestFliccd2Hdf5(object):
         pype, tasklet, component = pype_and_tasklet
         component.set_parameter("overwrite", True)
         random_image = np.random.rand(5, 25)
-        packet.set("full_path", input_file_name)
+        packet.set("file_name", input_file_name)
         packet.set("data", random_image)
         pype.send(packet)
         tasklet.run()

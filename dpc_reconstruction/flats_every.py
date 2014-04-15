@@ -110,11 +110,11 @@ class MergeFlatsEvery(pypes.component.Component):
 
     parameters:
     - n: number of inputs
-    - full_path: full path of the HDF5 to be used as output
+    - file_name: full path of the HDF5 to be used as output
 
     output packet attributes:
     - data: a merge of all the input datasets.
-    - full_path: path to be used for saving to an HDF5 file
+    - file_name: path to be used for saving to an HDF5 file
 
     """
 
@@ -126,7 +126,7 @@ class MergeFlatsEvery(pypes.component.Component):
         pypes.component.Component.__init__(self)
 
         self.set_parameter("n", n)
-        self.set_parameter("full_path", None)
+        self.set_parameter("file_name", None)
 
         self.remove_input('in')
         for i in range(n):
@@ -158,12 +158,12 @@ class MergeFlatsEvery(pypes.component.Component):
                 dataset = np.dstack(datasets)
                 packet = pypes.packet.Packet()
                 packet.set("data", dataset)
-                packet.set("full_path",
-                           self.get_parameter("full_path"))
+                packet.set("file_name",
+                           self.get_parameter("file_name"))
                 log.debug("%s: created dataset with shape %s",
                           self.__class__.__name__, dataset.shape)
                 log.debug("and full path %s",
-                          self.get_parameter("full_path"))
+                          self.get_parameter("file_name"))
                 # send the packet to the next component
                 self.send('out', packet)
 

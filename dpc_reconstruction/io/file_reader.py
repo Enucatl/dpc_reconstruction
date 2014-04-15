@@ -28,7 +28,7 @@ class FileReader(pypes.component.Component):
         - remove_source: (default: False) remove the file after reading it
 
     output packet with two attributes:
-        - full_path: absolute path of the file
+        - file_name: absolute path of the file
         - data: raw contents of the file
     """
 
@@ -48,19 +48,19 @@ class FileReader(pypes.component.Component):
             mode = self.get_parameter("mode")
             packet = pypes.packet.Packet()
             try:
-                full_path = os.path.abspath(file_name)
-                if not os.path.exists(full_path):
+                file_name = os.path.abspath(file_name)
+                if not os.path.exists(file_name):
                     raise OSError("file {0} not found!".format(
-                        full_path))
-                data = open(full_path, mode).read()
+                        file_name))
+                data = open(file_name, mode).read()
                 if self.get_parameter("remove_source"):
-                    os.remove(full_path)
+                    os.remove(file_name)
                     log.debug("{0} removed file {1}".format(
-                        self.__class__.__name__, full_path))
+                        self.__class__.__name__, file_name))
                 log.debug('{0} read file {1}'.format(
-                    self.__class__.__name__, full_path))
+                    self.__class__.__name__, file_name))
                 packet.set('data', data)
-                packet.set('full_path', full_path)
+                packet.set('file_name', file_name)
                 self.send('out', packet)
             except:
                 log.error('Component Failed: %s', self.__class__.__name__,

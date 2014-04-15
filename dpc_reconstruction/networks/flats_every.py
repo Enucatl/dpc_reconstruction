@@ -29,9 +29,8 @@ def flats_every_network_factory(files, flats_every,
     network = {splitter: {}}
     n = len(files) // (flats_every + n_flats)
     merger = MergeFlatsEvery(n)
-    output_file_name = output_name(
-        files, merger.__class__.__name__)
-    merger.set_parameter("full_path", output_file_name)
+    output_file_name = output_name(files)
+    merger.set_parameter("file_name", output_file_name)
     for i in range(n):
         fourier_network = fca.fourier_analysis_network_factory(
             phase_steps, group)
