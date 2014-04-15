@@ -65,7 +65,6 @@ class TestFliccd2Hdf5(object):
         packet.set(dataset_name, random_image)
         pype.send(packet)
         tasklet.run()
-        print("test output, dataset:", output_hdf5, dataset_name)
         output_file = h5py.File(output_hdf5)
         output_group = output_file[
             component.get_parameter("group")]
