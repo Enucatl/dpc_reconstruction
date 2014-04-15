@@ -162,7 +162,7 @@ class MergeFlatsEvery(pypes.component.Component):
                            self.get_parameter("file_name"))
                 log.debug("%s: created dataset with shape %s",
                           self.__class__.__name__, dataset.shape)
-                log.debug("and full path %s",
+                log.debug("and file name %s",
                           self.get_parameter("file_name"))
                 # send the packet to the next component
                 self.send('out', packet)
