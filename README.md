@@ -72,18 +72,13 @@ please report any bug or feature request using the [issues webpage](https://bitb
     #install pypes
     git clone https://github.com/Enucatl/pypes.git ~/bin/pypes
     pushd ~/bin/pypes
-    python bootstrap.py
-    bin/buildout
     cd core
-    python setup.py install
-    cd ../ui
-    pip install pylons
-    pip install elementtree
     python setup.py install
 
     #come back to the dpc_reconstruction folder
     #and install the pipeline components
     popd
+    make
     make install
 
 ## Structure
