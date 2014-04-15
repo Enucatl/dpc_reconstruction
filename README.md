@@ -4,7 +4,7 @@
 
 [pyenv](https://github.com/yyuu/pyenv) and [pyenv-virtualenv](https://github.com/yyuu/pyenv-virtualenv) to easily manage different python versions.
 
-[Stackless Python](http://www.stackless.com/) 2.7.2
+[Stackless Python](http://www.stackless.com/) 3.3
 
 [GIT](http://git-scm.com/ "GIT homepage") version control system ≥ 1.7
 
@@ -46,10 +46,8 @@ please report any bug or feature request using the [issues webpage](https://bitb
     #install pyenv-virtualenv
     git clone git://github.com/yyuu/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv
 
-    #install stackless python 2.7.2
-    pyenv install stackless-2.7.2
-    pyenv rehash
-    pyenv virtualenv stackless-2.7.2 stackless-python
+    #install stackless python 3.3
+    pyenv install stackless-3.3-dev
     pyenv rehash
 
     #install the python style and syntax checkers
@@ -101,7 +99,7 @@ is actually going on.
 ## Code style
 
 The repository is set up in a way that prevents commits
-that do not pass both the [pylint](http://www.pylint.org/) and [pep8](https://pypi.python.org/pypi/pep8) checks.
+that do not pass the [pep8](https://pypi.python.org/pypi/pep8) checks.
 
 Exceptions to these rules need to be discussed and added to the repository
 beforehand.
