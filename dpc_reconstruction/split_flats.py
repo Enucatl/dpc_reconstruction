@@ -137,6 +137,10 @@ class MergeFlatSample(pypes.component.Component):
                         2 * a1_flat / a0_flat,
                         (1, 1, sample.shape[2]))
                     sample_packet.set('visibility', visibility_map)
+                    sample_packet.set(
+                        'parameters',
+                        np.tile(np.expand_dims(flat, 2),
+                                (1, 1, sample.shape[2], 1)))
                     log.debug('''%s: merged flat and data and unwrapped the
                     phase values. Created dataset with shape %s''',
                               self.__class__.__name__, sample.shape)

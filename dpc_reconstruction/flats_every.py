@@ -142,26 +142,37 @@ class MergeFlatsEvery(pypes.component.Component):
             # for each packet waiting on our input port
             n = self.get_parameter("n")
             datasets = []
+            visibilities = []
+            parameters = []
+            phase_stepping_curves = []
             for i in range(n):
                 packet = self.receive("in{0}".format(i))
                 if not packet:
                     log.error("%d packet is None!", i)
                     continue
                 try:
-                    data = packet.get("data")
-                    datasets.append(data)
+                    parameters.append(packet.get("parameters"))
+                    visibilities.append(packet.get("visibility"))
+                    datasets.append(packet.get("data"))
+                    phase_stepping_curves.append(
+                        packet.get("phase stepping curves"))
                 except:
                     log.error('Component Failed: %s',
                               self.__class__.__name__, exc_info=True)
 
             if datasets:
-                dataset = np.dstack(datasets)
                 packet = pypes.packet.Packet()
-                packet.set("data", dataset)
-                packet.set("file_name",
-                           self.get_parameter("file_name"))
+                packet.set("data", np.dstack(datasets))
+                packet.set("visibility", np.dstack(visibilities))
+                packet.set("flat_parameters", np.dstack(parameters))
+                packet.set("phase_stepping_curves",
+                           np.dstack(phase_stepping_curves))
+                packet.set(
+                    "file_name",
+                    self.get_parameter("file_name"))
                 log.debug("%s: created dataset with shape %s",
-                          self.__class__.__name__, dataset.shape)
+                          self.__class__.__name__,
+                          packet.get("data").shape)
                 log.debug("and file name %s",
                           self.get_parameter("file_name"))
                 # send the packet to the next component
