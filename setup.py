@@ -18,6 +18,7 @@ setup(
     ],
 
     install_requires=[
+        'get_git_version',
         'numpy',
         'h5py',
         'matplotlib',
