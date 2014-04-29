@@ -1,7 +1,7 @@
 # pylint: disable=all
 
 from setuptools import setup, find_packages
-from get_git_version.get_git_version.version import get_git_version
+from get_git_version.version import get_git_version
 from subprocess import check_output
 
 
