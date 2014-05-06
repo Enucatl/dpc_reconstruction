@@ -4,7 +4,7 @@
 
 [pyenv](https://github.com/yyuu/pyenv) and [pyenv-virtualenv](https://github.com/yyuu/pyenv-virtualenv) to easily manage different python versions.
 
-[Stackless Python](http://www.stackless.com/) 3.3
+[Stackless Python](http://www.stackless.com/) 3.2
 
 [GIT](http://git-scm.com/ "GIT homepage") version control system ≥ 1.7
 
@@ -46,8 +46,8 @@ please report any bug or feature request using the [issues webpage](https://bitb
     #install pyenv-virtualenv
     git clone git://github.com/yyuu/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv
 
-    #install stackless python 3.3
-    pyenv install stackless-3.3-dev
+    #install stackless python 3.2
+    pyenv install stackless-3.2.2
     pyenv rehash
 
     #install the python style and syntax checkers
