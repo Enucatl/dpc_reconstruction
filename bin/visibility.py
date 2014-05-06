@@ -15,9 +15,11 @@ log = logging.getLogger()
 import pypes.pipeline
 import pypes.packet
 import pypes.component
+from pypes.component import HigherOrderComponent
 
 from pypes.plugins.name_changer import NameChanger
 from dpc_reconstruction.networks.visibility import visibility_factory
+from pypes.plugins.hdf5 import Hdf5Writer
 from dpc_reconstruction.commandline_parsers.basic import BasicParser
 
 description = "{1}\n\n{0}\n".format(dpc_reconstruction.__version__, __doc__)
@@ -26,19 +28,23 @@ commandline_parser.add_argument('files',
                                 metavar='FILE(s)',
                                 nargs='+',
                                 help='''file(s) with the images''')
+commandline_parser.add_argument('--steps', '-s',
+                                nargs='?', default=1, type=int,
+                                help='number of phase steps')
 
 
-def main(file_names, overwrite=False, jobs=1,
+def main(file_names, phase_steps, overwrite=False, jobs=1,
          batch=True):
     """show on screen if not batch"""
-    vis_network = visibility_factory(overwrite, batch)
+    vis_network = visibility_factory(phase_steps, overwrite, batch)
     file_writer = Hdf5Writer()
     name_changer = NameChanger({
-        "data": "visibility",
+        "data": "visibility_map",
     })
     file_writer.set_parameter("group", "postprocessing")
     file_writer.set_parameter("overwrite", overwrite)
     visibility_calculator = pypes.component.HigherOrderComponent(vis_network)
+    visibility_calculator.__metatype__ = "ADAPTER"
     network = {
         visibility_calculator: {
             name_changer: ("out", "in"),
@@ -67,5 +73,5 @@ if __name__ == '__main__':
         config_dictionary['handlers']['default']['level'] = 'DEBUG'
         config_dictionary['loggers']['']['level'] = 'DEBUG'
     logging.config.dictConfig(config_dictionary)
-    main(args.files, args.overwrite,
+    main(args.files, args.steps, args.overwrite,
          args.jobs, args.batch)
