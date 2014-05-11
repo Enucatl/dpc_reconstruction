@@ -1,13 +1,12 @@
 # pylint: disable=all
 
 from setuptools import setup, find_packages
-from get_git_version.version import get_git_version
 from subprocess import check_output
 
 
 setup(
     name="dpc_reconstruction",
-    version=get_git_version(),
+    version="v3.0.0",
     packages=find_packages(exclude='test'),
     scripts=[
         "bin/fliccd2hdf5.py",
@@ -18,7 +17,6 @@ setup(
     ],
 
     install_requires=[
-        'get_git_version',
         'numpy',
         'h5py',
         'pypes',
