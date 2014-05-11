@@ -2,14 +2,16 @@
 
 from __future__ import division, print_function
 
+from pypes.component import HigherOrderComponent
 from pypes.plugins.hdf5 import Hdf5Writer
 from pypes.plugins.hdf5 import Hdf5ReadGroup
+
 from dpc_reconstruction.stackers import Stacker
-from dpc_reconstruction.phase_stepping import FourierAnalyzer
 from dpc_reconstruction.visibility import VisibilityCalculator
+import dpc_reconstruction.networks.fourier_analysis as fca
 
 
-def visibility_factory(overwrite, batch):
+def visibility_factory(phase_steps, overwrite, batch):
     """Build a network that calculates the visibility of the phase stepping
     curves.
 
@@ -20,7 +22,8 @@ def visibility_factory(overwrite, batch):
     """
     file_reader = Hdf5ReadGroup()
     stacker = Stacker()
-    fourier_analyzer = FourierAnalyzer()
+    fca_network = fca.fourier_components_network_factory(phase_steps)
+    fourier_analyzer = HigherOrderComponent(fca_network)
     visibility_calculator = VisibilityCalculator()
     network = {
         file_reader: {

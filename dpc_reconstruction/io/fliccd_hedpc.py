@@ -10,7 +10,7 @@ import os
 import numpy as np
 import pypes.component
 
-#number of lines in a CCD FLI header
+# number of lines in a CCD FLI header
 _HEADER_LINES = 16
 
 log = logging.getLogger(__name__)
@@ -32,6 +32,7 @@ class FliRawReader(pypes.component.Component):
 
     output packet attributes:
         - file_name: the file name of the output hdf5 file
+        - raw_file_name: the file name of the input raw file
         - data: raw binary string containing only the image data
           (dtype=uint16), without the header
         - header: string containing the header only
@@ -51,6 +52,7 @@ class FliRawReader(pypes.component.Component):
             packet = self.receive("in")
             data = packet.get('data')
             file_name = packet.get("file_name")
+            packet.set("raw_file_name", file_name)
             packet.set("file_name",
                        os.path.dirname(file_name) + ".hdf5")
             if data is None:
@@ -61,7 +63,7 @@ class FliRawReader(pypes.component.Component):
                 self.__class__.__name__, len(lines)))
             try:
                 packet.set("header", lines[:_HEADER_LINES])
-                #first byte of the last line is useless
+                # first byte of the last line is useless
                 packet.set("data", lines[-1][1:])
             except:
                 log.error('Component Failed: %s', self.__class__.__name__,
@@ -215,7 +217,7 @@ class FileName2DatasetName(pypes.component.Component):
             packet = self.receive('in')
             try:
                 file_name = os.path.basename(
-                    packet.get("file_name"))
+                    packet.get("raw_file_name"))
                 packet.set(file_name,
                            packet.get("data"))
                 packet.delete("data")
