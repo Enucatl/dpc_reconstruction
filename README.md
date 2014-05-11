@@ -65,7 +65,6 @@ please report any bug or feature request using the [issues webpage](https://bitb
     pip install numpy
     pip install h5py
     pip install matplotlib  # only for plots
-    pip install git+https://Enucatl@bitbucket.org/Enucatl/get_git_version.git
     pyenv rehash
     git clone git@bitbucket.org:psitomcat/dpc_reconstruction.git
     cd dpc_reconstruction
