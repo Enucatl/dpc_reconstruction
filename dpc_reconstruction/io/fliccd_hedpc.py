@@ -59,12 +59,16 @@ class FliRawReader(pypes.component.Component):
                 self.yield_ctrl()
                 continue
             lines = data.splitlines()
-            log.debug("{0} is reading {1} lines".format(
-                self.__class__.__name__, len(lines)))
+            log.debug("%s is reading %s lines %s bytes",
+                      self.__class__.__name__, len(lines),
+                      len(data))
             try:
-                packet.set("header", lines[:_HEADER_LINES])
-                # first byte of the last line is useless
-                packet.set("data", lines[-1][1:])
+                header = lines[:_HEADER_LINES]
+                packet.set("header", header)
+                # need to add the \n bytes back
+                header_len = len(b"\n".join(header)) + 1
+                # first byte is useless
+                packet.set("data", data[header_len + 1:])
             except:
                 log.error('Component Failed: %s', self.__class__.__name__,
                           exc_info=True)
@@ -108,6 +112,7 @@ class FliRawHeaderAnalyzer(pypes.component.Component):
             for packet in packets:
                 try:
                     header = packet.get("header")
+                    log.debug("got header %s,", header)
                     exposure_time = float(header[4].split()[-1])
                     min_y, min_x, max_y, max_x = [
                         int(x) for x in header[-2].split()[2:]]
@@ -167,8 +172,12 @@ class FliRaw2Numpy(pypes.component.Component):
                 min_x = packet.get("min_x")
                 min_y = packet.get("min_y")
                 max_y = packet.get("max_y")
+                raw_bytes = packet.get("data")
+                log.debug("length of raw bytes = %s", len(raw_bytes))
+                raw_pixels = np.fromstring(raw_bytes, dtype=np.uint16)
+                log.debug("got raw file containing %s pixels", raw_pixels.shape)
                 image = np.reshape(
-                    np.fromstring(packet.get("data"), dtype=np.uint16),
+                    raw_pixels,
                     (max_y - min_y, max_x - min_x),
                     order='F')
                 log.debug("%s: image with shape %s",
