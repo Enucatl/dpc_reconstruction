@@ -23,7 +23,7 @@ class SplitFlatSample(pypes.component.Component):
         - None
 
     parameters:
-        - None
+        - group: hdf5 group with the raw images
 
     output ports:
         out  - sample data
@@ -39,6 +39,7 @@ class SplitFlatSample(pypes.component.Component):
         pypes.component.Component.__init__(self)
 
         self.add_output('out2', 'output for the flat data')
+        self.set_parameter("group", "/")
 
         # log successful initialization message
         log.debug('Component Initialized: %s',
@@ -50,12 +51,13 @@ class SplitFlatSample(pypes.component.Component):
 
             # for each packet waiting on our input port
             packet = self.receive("in")
+            group = self.get_parameter("group")
 
             try:
                 for file_name in packet.get('sample'):
                     new_packet = pypes.packet.Packet()
                     new_packet.set("file_name", file_name)
-                    new_packet.set("data", "raw_images")
+                    new_packet.set("data", group)
                     log.debug("%s sending out file %s",
                               self.__class__.__name__,
                               file_name)
@@ -63,7 +65,7 @@ class SplitFlatSample(pypes.component.Component):
                 for file_name in packet.get('flat'):
                     new_packet = pypes.packet.Packet()
                     new_packet.set("file_name", file_name)
-                    new_packet.set("data", "raw_images")
+                    new_packet.set("data", group)
                     log.debug("%s sending out file %s",
                               self.__class__.__name__,
                               file_name)

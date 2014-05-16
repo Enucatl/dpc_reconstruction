@@ -22,3 +22,6 @@ class BasicParser(argparse.ArgumentParser):
         self.add_argument('--batch', '-b',
                           action='store_true',
                           help='batch mode (no drawing or user interaction)')
+        self.add_argument('--group', '-g',
+                          nargs='?', default="raw_images",
+                          help='''group for the hdf5 file''')

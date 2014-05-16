@@ -18,25 +18,25 @@ import pypes.component
 from pypes.component import HigherOrderComponent
 
 from pypes.plugins.name_changer import NameChanger
-from dpc_reconstruction.networks.visibility import visibility_factory
+from dpc_reconstruction.commandline_parsers.phase_stepping\
+    import PhaseSteppingParser
 from pypes.plugins.hdf5 import Hdf5Writer
 from dpc_reconstruction.commandline_parsers.basic import BasicParser
 
 description = "{1}\n\n{0}\n".format(dpc_reconstruction.__version__, __doc__)
-commandline_parser = BasicParser(description=description)
+commandline_parser = PhaseSteppingParser(description=description)
 commandline_parser.add_argument('files',
                                 metavar='FILE(s)',
                                 nargs='+',
                                 help='''file(s) with the images''')
-commandline_parser.add_argument('--steps', '-s',
-                                nargs='?', default=1, type=int,
-                                help='number of phase steps')
 
 
-def main(file_names, phase_steps, overwrite=False, jobs=1,
+def main(file_names, phase_steps,
+         group="/",
+         overwrite=False, jobs=1,
          batch=True):
     """show on screen if not batch"""
-    vis_network = visibility_factory(phase_steps, overwrite, batch)
+    vis_network = visibility_factory(phase_steps, group, overwrite, batch)
     file_writer = Hdf5Writer()
     name_changer = NameChanger({
         "data": "visibility_map",
@@ -63,7 +63,7 @@ def main(file_names, phase_steps, overwrite=False, jobs=1,
             raise OSError
         packet = pypes.packet.Packet()
         packet.set("file_name", file_name)
-        packet.set("data", "raw_images")
+        packet.set("data", group)
         pipeline.send(packet)
     pipeline.close()
 
@@ -73,5 +73,6 @@ if __name__ == '__main__':
         config_dictionary['handlers']['default']['level'] = 'DEBUG'
         config_dictionary['loggers']['']['level'] = 'DEBUG'
     logging.config.dictConfig(config_dictionary)
-    main(args.files, args.steps, args.overwrite,
+    main(args.files, args.steps,
+         args.group, args.overwrite,
          args.jobs, args.batch)

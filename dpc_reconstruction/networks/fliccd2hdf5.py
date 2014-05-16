@@ -13,7 +13,7 @@ from dpc_reconstruction.io.fliccd_hedpc import FileName2DatasetName
 from pypes.plugins.hdf5 import Hdf5Writer
 
 
-def fliccd2hdf5_factory(overwrite, remove_source):
+def fliccd2hdf5_factory(group, overwrite, remove_source):
     """Build a network that converts a fliccd raw file to a hdf5 dataset.
 
     :overwrite: overwrite target dataset if it exists
@@ -29,6 +29,7 @@ def fliccd2hdf5_factory(overwrite, remove_source):
     file_name = FileName2DatasetName()
     hdf_writer = Hdf5Writer()
     hdf_writer.set_parameter("overwrite", overwrite)
+    hdf_writer.set_parameter("group", group)
     FliRawReader.__metatype__ = "TRANSFORMER"
     network = {
         file_reader: {

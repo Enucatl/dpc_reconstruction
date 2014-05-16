@@ -14,20 +14,18 @@ log = logging.getLogger()
 import pypes.pipeline
 
 from pypes.component import HigherOrderComponent
-from dpc_reconstruction.commandline_parsers.basic import BasicParser
+from dpc_reconstruction.commandline_parsers.phase_stepping\
+    import PhaseSteppingParser
 from pypes.plugins.hdf5 import Hdf5Writer
 from pypes.plugins.name_changer import NameChanger
 import dpc_reconstruction.networks.flats_every as fe
 
 description = "{1}\n\n{0}\n".format(dpc_reconstruction.__version__, __doc__)
-commandline_parser = BasicParser(description=description)
+commandline_parser = PhaseSteppingParser(description=description)
 commandline_parser.add_argument('files',
                                 metavar='FILE(s)',
                                 nargs='+',
                                 help='''file(s) with the images''')
-commandline_parser.add_argument('--steps', '-s',
-                                nargs='?', default=1, type=int,
-                                help='number of phase steps')
 commandline_parser.add_argument('--flats_every',
                                 nargs='?', default=1, type=int,
                                 help='flats every this many scans')
@@ -38,11 +36,11 @@ commandline_parser.add_argument('--n_flats',
 
 
 def main(files, flats_every, n_flats, phase_steps,
-         overwrite=False, jobs=1):
+         group, overwrite=False, jobs=1):
     """show on screen if not batch"""
     fe_network = fe.flats_every_network_factory(files,
                                                 flats_every,
-                                                n_flats, phase_steps)
+                                                n_flats, phase_steps, group)
     fe_analyzer = HigherOrderComponent(fe_network)
     file_writer = Hdf5Writer()
     name_changer = NameChanger({
@@ -71,4 +69,4 @@ if __name__ == '__main__':
         config_dictionary['loggers']['']['level'] = 'DEBUG'
     logging.config.dictConfig(config_dictionary)
     main(args.files, args.flats_every, args.n_flats,
-         args.steps, args.overwrite, args.jobs)
+         args.steps, args.group, args.overwrite, args.jobs)

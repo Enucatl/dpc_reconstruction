@@ -33,7 +33,8 @@ logging.config.dictConfig(config_dictionary)
 class VisibilityNetwork(pypes.component.HigherOrderComponent):
     def __init__(self):
         super(VisibilityNetwork, self).__init__(
-            visibility_factory(overwrite=True, batch=True))
+            visibility_factory(phase_steps=9, group="raw_images",
+                               overwrite=True, batch=True))
 
 
 @pytest.mark.usefixtures("packet")

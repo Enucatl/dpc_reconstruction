@@ -11,7 +11,7 @@ from dpc_reconstruction.visibility import VisibilityCalculator
 import dpc_reconstruction.networks.fourier_analysis as fca
 
 
-def visibility_factory(phase_steps, overwrite, batch):
+def visibility_factory(phase_steps, group, overwrite, batch):
     """Build a network that calculates the visibility of the phase stepping
     curves.
 
@@ -22,7 +22,7 @@ def visibility_factory(phase_steps, overwrite, batch):
     """
     file_reader = Hdf5ReadGroup()
     stacker = Stacker()
-    fca_network = fca.fourier_components_network_factory(phase_steps)
+    fca_network = fca.fourier_components_network_factory(phase_steps, group)
     fourier_analyzer = HigherOrderComponent(fca_network)
     visibility_calculator = VisibilityCalculator()
     network = {

@@ -12,7 +12,7 @@ from dpc_reconstruction.flats_every import MergeFlatsEvery
 
 def flats_every_network_factory(files, flats_every,
                                 n_flats, phase_steps,
-                                group="raw_images"):
+                                group):
     """Separate the files into groups with one flat section each that is
     then processed by the fourier analysis network.
 

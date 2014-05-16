@@ -12,7 +12,7 @@ from dpc_reconstruction.stackers import PhaseStepsSplitter
 from dpc_reconstruction.phase_stepping import FourierAnalyzer
 
 
-def fourier_components_network_factory(phase_steps, group="raw_images"):
+def fourier_components_network_factory(phase_steps, group):
     """Subnetwork that needs to be performed on both the sample and flat
     data:
         - read the HDF5 files
@@ -45,8 +45,7 @@ def fourier_components_network_factory(phase_steps, group="raw_images"):
     return network
 
 
-def fourier_analysis_network_factory(phase_steps,
-                                     group="raw_images"):
+def fourier_analysis_network_factory(phase_steps, group):
     """Build the network for the reconstruction pipeline.
     - the flats and sample images are split and separately reconstructed by
       the same code (provided by the fourier_components_network_factory).

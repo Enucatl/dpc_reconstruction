@@ -32,8 +32,8 @@ commandline_parser.add_argument('--remove', '-r',
                                 the files.''')
 
 
-def main(folders, overwrite=False, jobs=1, remove_source=False):
-    network = fliccd2hdf5_factory(overwrite, remove_source)
+def main(folders, group, overwrite=False, jobs=1, remove_source=False):
+    network = fliccd2hdf5_factory(group, overwrite, remove_source)
     pipeline = pypes.pipeline.Dataflow(network, n=jobs)
     for folder in folders:
         if not os.path.exists(folder) or not os.path.isdir(folder):
@@ -54,4 +54,4 @@ if __name__ == '__main__':
         config_dictionary['handlers']['default']['level'] = 'DEBUG'
         config_dictionary['loggers']['']['level'] = 'DEBUG'
     logging.config.dictConfig(config_dictionary)
-    main(args.folder, args.overwrite, args.jobs, args.remove)
+    main(args.folder, args.group, args.overwrite, args.jobs, args.remove)

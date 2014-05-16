@@ -14,12 +14,13 @@ import pypes.pipeline
 import pypes.packet
 
 from pypes.component import HigherOrderComponent
-from dpc_reconstruction.commandline_parsers.basic import BasicParser
+from dpc_reconstruction.commandline_parsers.phase_stepping\
+    import PhaseSteppingParser
 from pypes.plugins.hdf5 import Hdf5Writer
 import dpc_reconstruction.networks.fourier_analysis as fca
 
 description = "{1}\n\n{0}\n".format(dpc_reconstruction.__version__, __doc__)
-commandline_parser = BasicParser(description=description)
+commandline_parser = PhaseSteppingParser(description=description)
 commandline_parser.add_argument('files',
                                 metavar='FILE(s)',
                                 nargs='+',
@@ -28,18 +29,15 @@ commandline_parser.add_argument('--flat',
                                 metavar='FLATS(s)',
                                 nargs='+',
                                 help='''file(s) with the flat images''')
-commandline_parser.add_argument('--steps', '-s',
-                                nargs='?', default=1, type=int,
-                                help='number of phase steps')
 
 
 def main(file_names, flat_file_names, phase_steps,
-         overwrite=False, jobs=1):
+         group, overwrite=False, jobs=1):
     """show on screen if not batch"""
     packet = pypes.packet.Packet()
     packet.set('sample', file_names)
     packet.set('flat', flat_file_names)
-    fca_network = fca.fourier_analysis_network_factory(phase_steps)
+    fca_network = fca.fourier_analysis_network_factory(phase_steps, group)
     fca_analyzer = HigherOrderComponent(fca_network)
     fca_analyzer.__metatype__ = "ADAPTER"
     file_writer = Hdf5Writer()
@@ -63,4 +61,4 @@ if __name__ == '__main__':
         config_dictionary['loggers']['']['level'] = 'DEBUG'
     logging.config.dictConfig(config_dictionary)
     main(args.files, args.flat, args.steps,
-         args.overwrite, args.jobs)
+         args.group, args.overwrite, args.jobs)
