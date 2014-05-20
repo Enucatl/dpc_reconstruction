@@ -12,7 +12,7 @@ from dpc_reconstruction.stackers import PhaseStepsSplitter
 from dpc_reconstruction.phase_stepping import FourierAnalyzer
 
 
-def fourier_components_network_factory(phase_steps, group):
+def fourier_components_network_factory(phase_steps):
     """Subnetwork that needs to be performed on both the sample and flat
     data:
         - read the HDF5 files
@@ -59,10 +59,11 @@ def fourier_analysis_network_factory(phase_steps, group):
     :returns: the network in the dictionary format
     """
     flat_splitter = SplitFlatSample()
+    flat_splitter.set_parameter("group", group)
     flat_component_calculator = HigherOrderComponent(
-        fourier_components_network_factory(phase_steps, group))
+        fourier_components_network_factory(phase_steps))
     sample_component_calculator = HigherOrderComponent(
-        fourier_components_network_factory(phase_steps, group))
+        fourier_components_network_factory(phase_steps))
     flat_average = Average()
 
     flat_sample_merger = MergeFlatSample()

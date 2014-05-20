@@ -52,23 +52,24 @@ class SplitFlatSample(pypes.component.Component):
             # for each packet waiting on our input port
             packet = self.receive("in")
             group = self.get_parameter("group")
-
             try:
                 for file_name in packet.get('sample'):
                     new_packet = pypes.packet.Packet()
                     new_packet.set("file_name", file_name)
                     new_packet.set("data", group)
-                    log.debug("%s sending out file %s",
+                    log.debug("%s sending out sample file %s group %s",
                               self.__class__.__name__,
-                              file_name)
+                              file_name,
+                              group)
                     self.send('out', new_packet)
                 for file_name in packet.get('flat'):
                     new_packet = pypes.packet.Packet()
                     new_packet.set("file_name", file_name)
                     new_packet.set("data", group)
-                    log.debug("%s sending out file %s",
+                    log.debug("%s sending out flat file %s group %s",
                               self.__class__.__name__,
-                              file_name)
+                              file_name,
+                              group)
                     self.send('out2', new_packet)
             except:
                 log.error('Component Failed: %s', self.__class__.__name__,

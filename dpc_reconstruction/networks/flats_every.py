@@ -26,6 +26,7 @@ def flats_every_network_factory(files, flats_every,
 
     """
     splitter = SplitFlatsEvery(files, flats_every, n_flats)
+    splitter.set_parameter('group', group)
     network = {splitter: {}}
     n = len(files) // (flats_every + n_flats)
     merger = MergeFlatsEvery(n)
