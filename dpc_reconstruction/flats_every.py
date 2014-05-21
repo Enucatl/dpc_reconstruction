@@ -145,6 +145,7 @@ class MergeFlatsEvery(pypes.component.Component):
             visibilities = []
             parameters = []
             phase_stepping_curves = []
+            flat_phase_stepping_curves = []
             for i in range(n):
                 packet = self.receive("in{0}".format(i))
                 if not packet:
@@ -156,6 +157,8 @@ class MergeFlatsEvery(pypes.component.Component):
                     datasets.append(packet.get("data"))
                     phase_stepping_curves.append(
                         packet.get("phase stepping curves"))
+                    flat_phase_stepping_curves.append(
+                        packet.get("flat median phase stepping curves"))
                 except:
                     log.error('Component Failed: %s',
                               self.__class__.__name__, exc_info=True)
@@ -167,6 +170,8 @@ class MergeFlatsEvery(pypes.component.Component):
                 packet.set("flat_parameters", np.dstack(parameters))
                 packet.set("phase_stepping_curves",
                            np.dstack(phase_stepping_curves))
+                packet.set("flat_phase_stepping_curves",
+                           np.dstack(flat_phase_stepping_curves))
                 packet.set(
                     "file_name",
                     self.get_parameter("file_name"))

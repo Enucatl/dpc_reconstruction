@@ -139,7 +139,15 @@ class MergeFlatSample(pypes.component.Component):
                     visibility_map = np.tile(
                         2 * a1_flat / a0_flat,
                         (1, 1, sample.shape[2]))
+                    flat_curves = flat_packet.get("phase stepping curves")
+                    median_flat = np.median(flat_curves, axis=2)
+                    flat_median_curve = np.tile(
+                        np.expand_dims(median_flat, 2),
+                        (1, 1, sample.shape[2], 1))
+                    log.debug("tiled flat shape %s", flat_median_curve.shape)
                     sample_packet.set('visibility', visibility_map)
+                    sample_packet.set('flat median phase stepping curves',
+                                      flat_median_curve)
                     sample_packet.set(
                         'parameters',
                         np.tile(np.expand_dims(flat, 2),
