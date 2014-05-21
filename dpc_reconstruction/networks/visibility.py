@@ -20,18 +20,10 @@ def visibility_factory(phase_steps, group, overwrite, batch):
     :returns: the network as a dictionary
 
     """
-    file_reader = Hdf5ReadGroup()
-    stacker = Stacker()
-    fca_network = fca.fourier_components_network_factory(phase_steps, group)
+    fca_network = fca.fourier_components_network_factory(phase_steps)
     fourier_analyzer = HigherOrderComponent(fca_network)
     visibility_calculator = VisibilityCalculator()
     network = {
-        file_reader: {
-            stacker: ('out', 'in'),
-        },
-        stacker: {
-            fourier_analyzer: ('out', 'in'),
-        },
         fourier_analyzer: {
             visibility_calculator: ('out', 'in'),
         },

@@ -22,6 +22,7 @@ from dpc_reconstruction.commandline_parsers.phase_stepping\
     import PhaseSteppingParser
 from pypes.plugins.hdf5 import Hdf5Writer
 from dpc_reconstruction.commandline_parsers.basic import BasicParser
+from dpc_reconstruction.networks.visibility import visibility_factory
 
 description = "{1}\n\n{0}\n".format(dpc_reconstruction.__version__, __doc__)
 commandline_parser = PhaseSteppingParser(description=description)
