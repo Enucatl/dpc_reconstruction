@@ -11,11 +11,10 @@ import pypes.component
 log = logging.getLogger(__name__)
 
 
-class ShadoboxToNumpy(pypes.component.Component):
+class MythenToNumpy(pypes.component.Component):
     """
     mandatory input packet attributes:
-        - data: Binary content of the image file
-        - file_name: the file name of the input
+        - data: Text content of the image file
 
     optional input packet attributes:
         - none:
@@ -25,8 +24,6 @@ class ShadoboxToNumpy(pypes.component.Component):
 
     output packet attributes:
         - data: hdf5 data set
-        - raw_file_name: the file name of the input raw file
-        - file_name: the file name of the output hdf5 file
 
     """
 
@@ -52,15 +49,14 @@ class ShadoboxToNumpy(pypes.component.Component):
                     packet.set("raw_file_name", file_name)
                     packet.set("file_name",
                        os.path.dirname(file_name) + ".hdf5")
-                    data_array = np.fromstring(raw_data, 'uint16')
-                    header = data_array[:2]
-                    # cheack order of header entries to correctly rearrange
+                    data = np.fromstring(
+                        raw_data,
+                        dtype='uint32',
+                        sep=' ').reshape((-1, 2))[..., 1]
+                    # check order of header entries to correctly rearrange
                     # array
-                    data = np.reshape(data_array[2:], (header[0],
-                                                       header[1]))
                     log.debug('{0} read dataset with shape {1}'.format(
                         self.__class__.__name__, data.shape))
-                    packet.set('header', header)
                     packet.set('data', data)
                 except:
                     log.error('Component Failed: %s', self.__class__.__name__,

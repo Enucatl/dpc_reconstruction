@@ -16,9 +16,9 @@ log = logging.getLogger()
 import pypes.pipeline
 
 from dpc_reconstruction.io.file_reader import FileReader
-from dpc_reconstruction.io.fliccd_hedpc import FileName2DatasetName
-from dpc_reconstruction.io.shadobox import ShadoboxToNumpy
+from dpc_reconstruction.io.mythen import MythenToNumpy
 from pypes.plugins.hdf5 import Hdf5Writer
+from dpc_reconstruction.io.fliccd_hedpc import FileName2DatasetName
 
 from dpc_reconstruction.commandline_parsers.basic import BasicParser
 
@@ -36,17 +36,20 @@ commandline_parser.add_argument('--remove', '-r',
                                 files.''')
 
 
-def main(folders, overwrite=False, jobs=1):
+def main(folders, overwrite=False, remove=False, jobs=1):
     file_reader = FileReader()
-    shadobox_to_numpy = ShadoboxToNumpy()
-    file_name = FileName2DatasetName()
+    file_reader.set_parameter("mode", "r")
+    file_reader.set_parameter("remove_source", remove)
+    mythen_to_numpy = MythenToNumpy()
     hdf_writer = Hdf5Writer()
+    hdf_writer.set_parameter("group", "raw_images")
+    file_name = FileName2DatasetName()
     hdf_writer.set_parameter("overwrite", overwrite)
     network = {
         file_reader: {
-            shadobox_to_numpy: ('out', 'in')
+            mythen_to_numpy: ('out', 'in')
         },
-        shadobox_to_numpy: {
+        mythen_to_numpy: {
             file_name: ('out', 'in')
         },
         file_name: {
@@ -73,4 +76,4 @@ if __name__ == '__main__':
         config_dictionary['handlers']['default']['level'] = 'DEBUG'
         config_dictionary['loggers']['']['level'] = 'DEBUG'
     logging.config.dictConfig(config_dictionary)
-    main(args.folder, args.overwrite, args.jobs)
+    main(args.folder, args.overwrite, args.remove, args.jobs)
