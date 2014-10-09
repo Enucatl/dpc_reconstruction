@@ -80,9 +80,6 @@ class Stacker(pypes.component.Component):
                 output_file_name = output_name(file_names)
                 packet.set("file_name", output_file_name)
 
-                #add info from first dataset
-                for key, value in datasets[0].attrs.items():
-                    packet.set(key, value)
                 log.debug('{0} dataset created with shape {1}'.format(
                     self.__class__.__name__, data.shape))
             except:
