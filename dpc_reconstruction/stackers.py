@@ -141,7 +141,7 @@ class PhaseStepsSplitter(pypes.component.Component):
                         '{0} split data with shape {1} into {2} chunks'.format(
                             self.__class__.__name__, data.shape, chunk_size))
                     split_data = np.split(data, chunk_size, axis=2)
-                    #add axis to each dataset
+                    # add axis to each dataset
                     added_axis = [np.expand_dims(array, axis=2)
                                   for array in split_data]
                     concatenated = np.concatenate(added_axis, axis=2)
