@@ -72,7 +72,6 @@ please report any bug or feature request using the [issues webpage](https://bitb
     #install pypes
     git clone https://github.com/Enucatl/pypes.git ~/bin/pypes
     pushd ~/bin/pypes
-    cd core
     python setup.py install
 
     #come back to the dpc_reconstruction folder
