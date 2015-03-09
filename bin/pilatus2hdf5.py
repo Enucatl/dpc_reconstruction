@@ -38,7 +38,6 @@ commandline_parser.add_argument('--remove', '-r',
 
 def main(folders, overwrite=False, remove=False, jobs=1):
     file_reader = FileReader()
-    file_reader.set_parameter("mode", "r")
     file_reader.set_parameter("remove_source", remove)
     pilatus_to_numpy = PilatusToNumpy()
     hdf_writer = Hdf5Writer()
