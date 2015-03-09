@@ -10,6 +10,7 @@ setup(
     packages=find_packages(exclude='test'),
     scripts=[
         "bin/mythen2hdf5.py",
+        "bin/pilatus2hdf5.py",
         "bin/fliccd2hdf5.py",
         "bin/shadobox2hdf5.py",
         "bin/visibility.py",
