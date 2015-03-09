@@ -34,12 +34,17 @@ commandline_parser.add_argument('--remove', '-r',
                                 action='store_true',
                                 help='''remove the folder after converting the
                                 files.''')
+commandline_parser.add_argument('--roi',
+                                type=int,
+                                nargs=4,
+                                default=[0, 0, 487, 619],
+                                help='''region of interest.''')
 
-
-def main(folders, overwrite=False, remove=False, jobs=1):
+def main(folders, roi, overwrite=False, remove=False, jobs=1):
     file_reader = FileReader()
     file_reader.set_parameter("remove_source", remove)
     pilatus_to_numpy = PilatusToNumpy()
+    pilatus_to_numpy.set_parameter("roi", roi)
     hdf_writer = Hdf5Writer()
     hdf_writer.set_parameter("group", "raw_images")
     file_name = FileName2DatasetName()
@@ -75,4 +80,4 @@ if __name__ == '__main__':
         config_dictionary['handlers']['default']['level'] = 'DEBUG'
         config_dictionary['loggers']['']['level'] = 'DEBUG'
     logging.config.dictConfig(config_dictionary)
-    main(args.folder, args.overwrite, args.remove, args.jobs)
+    main(args.folder, args.roi, args.overwrite, args.remove, args.jobs)

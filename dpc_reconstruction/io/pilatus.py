@@ -20,7 +20,7 @@ class PilatusToNumpy(pypes.component.Component):
         - none:
 
     parameters:
-        - none:
+        - roi: cut the image down to a roi
 
     output packet attributes:
         - data: hdf5 data set
@@ -34,14 +34,17 @@ class PilatusToNumpy(pypes.component.Component):
         # initialize parent class
         pypes.component.Component.__init__(self)
 
+        self.set_parameter("roi", [0, 0, 486, 618])
         # log successful initialization message
         log.debug('Component Initialized: %s', self.__class__.__name__)
+
 
     def run(self):
         # Define our components entry point
         while True:
 
             # for each packet waiting on our input port
+            roi = self.get_parameter("roi")
             for packet in self.receive_all('in'):
                 try:
                     raw_data = packet.get('data')
@@ -52,7 +55,8 @@ class PilatusToNumpy(pypes.component.Component):
                     data = np.fromstring(
                         raw_data,
                         dtype='int32'
-                        ).reshape((487, 619))
+                        ).reshape((487, 619))[
+                            roi[0]:roi[2], roi[1]:roi[3]]
                     # check order of header entries to correctly rearrange
                     # array
                     log.debug('{0} read dataset with shape {1}'.format(
