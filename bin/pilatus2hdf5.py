@@ -63,7 +63,7 @@ def main(folders, overwrite=False, remove=False, jobs=1):
                 __name__, folder))
             pipeline.close()
             raise OSError
-        file_names = sorted(glob(os.path.join(folder, "*.raw")))
+        file_names = sorted(glob(os.path.join(folder, "*")))
         log.debug("{0} {1}: converting {2} raw files.".format(
             __name__, dpc_reconstruction.__version__, len(file_names)))
         for file_name in file_names:
