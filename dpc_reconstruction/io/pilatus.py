@@ -55,8 +55,7 @@ class PilatusToNumpy(pypes.component.Component):
                     data = np.fromstring(
                         raw_data,
                         dtype='int32'
-                        ).reshape((487, 619))[
-                            roi[0]:roi[2], roi[1]:roi[3]]
+                        ).reshape((roi[2] - roi[0], roi[3] - roi[1]))
                     # check order of header entries to correctly rearrange
                     # array
                     log.debug('{0} read dataset with shape {1}'.format(
