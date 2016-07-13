@@ -13,30 +13,7 @@ log = logging.getLogger(__name__)
 def angle(c):
     y = tf.imag(c)
     x = tf.real(c)
-    zeros = tf.zeros_like(x)
-    cond1 = tf.greater(x, zeros)
-    cond2 = tf.logical_and(tf.less(x, zeros), tf.greater_equal(y, zeros))
-    cond3 = tf.logical_and(tf.less(x, zeros), tf.less(y, zeros))
-    cond4 = tf.logical_and(tf.equal(x, zeros), tf.greater(y, zeros))
-    cond5 = tf.logical_and(tf.equal(x, zeros), tf.less(y, zeros))
-    zeros[tf.where(cond1)] = tf.atan(
-        tf.truediv(
-            y[tf.where(cond1)], x[tf.where(cond1)]
-        )
-    )
-    zeros[tf.where(cond2)] = tf.atan(
-        tf.truediv(
-            y[tf.where(cond2)], x[tf.where(cond2)]
-        )
-    ) + np.pi
-    zeros[tf.where(cond3)] = tf.atan(
-        tf.truediv(
-            y[tf.where(cond3)], x[tf.where(cond3)]
-        )
-    ) - np.pi
-    zeros[tf.where(cond4)] = np.pi / 2
-    zeros[tf.where(cond5)] = -np.pi / 2
-    return zeros
+    return tf.atan(y / x)
 
 
 def get_signals(phase_stepping_curves, n_periods=1):
