@@ -4,28 +4,20 @@
 
 [pyenv](https://github.com/yyuu/pyenv) and [pyenv-virtualenv](https://github.com/yyuu/pyenv-virtualenv) to easily manage different python versions.
 
-[Stackless Python](http://www.stackless.com/) 3.3.5
-
 [GIT](http://git-scm.com/ "GIT homepage") version control system ≥ 1.7
-
-[Python Setuptools](https://pypi.python.org/pypi/setuptools) for
-installing the python scripts
-
-[Numpy](http://www.numpy.org/) for the calculations (very similar to
-matlab!)
 
 [HDF5](http://www.hdfgroup.org/HDF5/) for the image storage
 
-[pypes](https://github.com/Enucatl/pypes) for the pipeline
+[tensorflow]() for the pipeline
 
 ## Report Bugs & Request Features
 
-please report any bug or feature request using the [issues webpage](https://bitbucket.org/psitomcat/dpc_reconstruction/issues?status=new&status=open).
+please report any bug or feature request using the [issues webpage]().
 
 ## Download
 
     :::bash
-    git clone git@bitbucket.org:psitomcat/dpc_reconstruction.git
+    git clone git@git.psi.ch:tomcat/dpc_reconstruction.git
 
 ## Packages for scientific linux 6
 

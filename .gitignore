@@ -10,3 +10,4 @@ callgrind*
 RELEASE-VERSION
 build
 dist
+.cache
