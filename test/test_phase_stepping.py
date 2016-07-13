@@ -34,11 +34,11 @@ class TestDPCReconstruction(object):
 
     """
 
-    @pytest.mark.parametrize("c", np.random.randint(100, 100000, size=1))
-    @pytest.mark.parametrize("v", np.random.random(size=1))
-    @pytest.mark.parametrize("phi", -2 + 4 * np.random.random(size=1))
+    @pytest.mark.parametrize("c", np.random.randint(100, 100000, size=3))
+    @pytest.mark.parametrize("v", np.random.random(size=3))
+    @pytest.mark.parametrize("phi", -2 + 4 * np.random.random(size=2))
     @pytest.mark.parametrize("steps_per_period", range(3, 4))
-    @pytest.mark.parametrize("periods", np.random.randint(1, 3, size=1))
+    @pytest.mark.parametrize("periods", np.random.randint(1, 3, size=2))
     def test_fourier_analyzer(self, c, v, phi, steps_per_period, periods):
         steps = steps_per_period * periods
         pixels_x = 1
@@ -49,7 +49,7 @@ class TestDPCReconstruction(object):
         )
         with tf.Session() as sess:
             output = sess.run(m.get_signals(input_data, periods))
-            assert output.shape == (pixels_x, pixels_y, pixels_z, 3)
+            assert output.shape == (pixels_x, pixels_y, 3)
             assert np.allclose(output[..., 0], c * steps)
             assert np.allclose(output[..., 2], v * c * steps / 2)
             assert np.allclose(output[..., 1], phi)
