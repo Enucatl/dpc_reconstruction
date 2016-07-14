@@ -14,14 +14,6 @@ import pypes.packet
 log = logging.getLogger(__name__)
 
 
-def chunks(l, n):
-    """ Yield successive n-sized chunks from l.
-    http://stackoverflow.com/a/312464
-    """
-    for i in range(0, len(l), n):
-        yield l[i:i + n]
-
-
 class SplitFlatsEvery(pypes.component.Component):
     """
     mandatory input packet attributes:

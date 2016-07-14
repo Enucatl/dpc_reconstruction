@@ -12,8 +12,9 @@ def compare_sample_to_flat(sample, flat):
     sample[:, :, 0] /= a0_flat
     sample[:, :, 1] -= phi_flat
     sample[:, :, 2] /= a1_flat / sample[:, :, 0]
+
     # unwrap the phase values
-    sample[..., 1] = tf.mod(
-        sample[..., 1] + np.pi, 2 * np.pi
+    sample[:, :, 1] = tf.mod(
+        sample[:, :, 1] + np.pi, 2 * np.pi
     ) - np.pi
     return sample
