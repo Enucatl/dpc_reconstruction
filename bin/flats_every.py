@@ -45,11 +45,26 @@ def main(
         jobs=1
         ):
         n = flats_every + n_flats
+        samples = []
+        flats = []
         for i, chunk in enumerate(chunks(files, n)):
             sample_files = chunk[:flats_every]
             flat_files = chunk[flats_every:flats_every + n_flats]
-            samples = np.stack([hdf5_reader.read_group(sample, group)
-                                for sample in sample_files])
-            flats = np.stack([hdf5_reader.read_group(sample, group)
-                              for sample in flat_files])
-            print(samples.shape, flats.shape)
+            chunk_samples = np.stack(
+                [hdf5_reader.read_group(sample, group)
+                 for sample in sample_files])
+            chunk_flats = np.stack(
+                [hdf5_reader.read_group(sample, group)
+                 for sample in flat_files])
+            print(chunk_samples.shape, chunk_flats.shape)
+            if chunk_flats.shape[0] > 1:
+                np.median(chunk_flats, axis=0, overwrite_input=True)
+            if chunk_samples.shape[0] > 1:
+                chunk_flats = np.tile(
+                    chunk_flats, (chunk_samples.shape[0], 1, 1)
+                )
+            samples.append(chunk_samples)
+            flats.append(chunk_flats)
+        samples = np.concatenate(samples)
+        flats = np.concatenate(flats)
+        print(samples.shape, flats.shape)
