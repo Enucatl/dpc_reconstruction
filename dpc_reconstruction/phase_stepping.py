@@ -3,10 +3,12 @@ Functions for reconstructing the DPC images from the raw phase steps.
 
 """
 
+import os
 import logging
 import numpy as np
 import tensorflow as tf
 
+angle_module = tf.load_op_library(os.path.join("src", "arg.so"))
 log = logging.getLogger(__name__)
 
 
@@ -23,10 +25,14 @@ def get_signals(phase_stepping_curves, n_periods=1):
     returns a0, phi and a1 along the last axis.
     """
 
-    transformed = np.fft.rfft(phase_stepping_curves.eval())
-    a0 = np.abs(transformed[:, :, 0])
-    a1 = np.abs(transformed[:, :, n_periods])
-    phi1 = np.angle(transformed[:, :, n_periods])
+    transformed = tf.py_func(
+        np.fft.rfft,
+        [phase_stepping_curves],
+        [tf.complex128]
+    )[0]
+    a0 = tf.abs(transformed[:, :, 0])
+    a1 = tf.abs(transformed[:, :, n_periods])
+    phi1 = angle_module.arg(transformed[:, :, n_periods])
     return tf.transpose(
         tf.pack([a0, phi1, a1]),
         perm=[1, 2, 0]
