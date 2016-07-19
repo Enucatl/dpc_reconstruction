@@ -16,43 +16,30 @@ please report any bug or feature request using the [issues webpage]().
 
 ## Download
 
-    :::bash
     git clone git@github.com:Enucatl/dpc_reconstruction.git
 
 ## Packages for scientific linux 6
 
-    :::bash
     su -c 'yum install {libpng,freetype,readline,bzip2,sqlite,hdf5}-devel'
 
 ## Install the requirements
 
     Check out the tensorflow page to install tensorflow.
 
-    :::bash
     #install pyenv
     cd
-    git clone git://github.com/yyuu/pyenv.git .pyenv
-    echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
-    echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
-    echo 'export PATH="$PYENV_ROOT/shims:$PATH"' >> ~/.bashrc
-    source ~/.bashrc
-
-    #install pyenv-virtualenv
-    git clone git://github.com/yyuu/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv
+    curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
 
     #install python
     pyenv install $(cat .python-version)
-    pyenv rehash
 
     #install the python style and syntax checkers
     pip install pep8
     pip install pylint
-    pyenv rehash
 
 
 ## Install
 
-    :::bash
     mkdir ~/bin; cd ~/bin
     pip install --upgrade setuptools
     pip install numpy
