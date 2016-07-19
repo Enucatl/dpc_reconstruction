@@ -12,6 +12,10 @@ angle_module = tf.load_op_library(os.path.join("src", "arg.so"))
 log = logging.getLogger(__name__)
 
 
+def visibility(data):
+    return 2 * data[:, :, 2] / data[:, :, 0]
+
+
 def get_signals(phase_stepping_curves, n_periods=1):
     """Get the average a_0, the phase phi and the amplitude
     |a_1| from the phase stepping curves.
@@ -35,5 +39,21 @@ def get_signals(phase_stepping_curves, n_periods=1):
     phi1 = angle_module.arg(transformed[:, :, n_periods])
     return tf.transpose(
         tf.pack([a0, phi1, a1]),
+        perm=[1, 2, 0]
+    )
+
+
+def compare_sample_to_flat(sample, flat):
+    a0_flat = flat[:, :, 0]
+    phi_flat = flat[:, :, 1]
+    a1_flat = flat[:, :, 2]
+    result0 = sample[:, :, 0] / flat[:, :, 0]
+    result1 = tf.mod(
+        sample[:, :, 1] - flat[:, :, 1] + np.pi,
+        2 * np.pi
+    ) - np.pi
+    result2 = sample[:, :, 2] / flat[:, :, 2] / result0
+    return tf.transpose(
+        tf.pack([result0, result1, result2]),
         perm=[1, 2, 0]
     )

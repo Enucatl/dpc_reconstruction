@@ -35,7 +35,6 @@ class ArgOp : public OpKernel {
             const int N = input.size();
             for (int i = 0; i < N; i++) {
                 output(i) = std::arg(input(i));
-                std::cout << input(i) << " " << output(i) << std::endl;
             }
         }
 };
