@@ -8,7 +8,7 @@
 
 [HDF5](http://www.hdfgroup.org/HDF5/) for the image storage
 
-[tensorflow]() for the pipeline
+[tensorflow](https://www.tensorflow.org/) for the pipeline
 
 ## Report Bugs & Request Features
 
@@ -17,7 +17,7 @@ please report any bug or feature request using the [issues webpage]().
 ## Download
 
     :::bash
-    git clone git@git.psi.ch:tomcat/dpc_reconstruction.git
+    git clone git@github.com:Enucatl/dpc_reconstruction.git
 
 ## Packages for scientific linux 6
 
@@ -25,6 +25,8 @@ please report any bug or feature request using the [issues webpage]().
     su -c 'yum install {libpng,freetype,readline,bzip2,sqlite,hdf5}-devel'
 
 ## Install the requirements
+
+    Check out the tensorflow page to install tensorflow.
 
     :::bash
     #install pyenv
@@ -38,8 +40,8 @@ please report any bug or feature request using the [issues webpage]().
     #install pyenv-virtualenv
     git clone git://github.com/yyuu/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv
 
-    #install stackless python 3.3.5
-    pyenv install stackless-3.3.5
+    #install python
+    pyenv install $(cat .python-version)
     pyenv rehash
 
     #install the python style and syntax checkers
@@ -53,34 +55,11 @@ please report any bug or feature request using the [issues webpage]().
     :::bash
     mkdir ~/bin; cd ~/bin
     pip install --upgrade setuptools
-    pip install pytest
     pip install numpy
     pip install h5py
-    pip install matplotlib  # only for plots
-    pyenv rehash
-    git clone git@bitbucket.org:psitomcat/dpc_reconstruction.git
-    cd dpc_reconstruction
-
-    #install pypes
-    git clone https://github.com/Enucatl/pypes.git ~/bin/pypes
-    pushd ~/bin/pypes
-    python setup.py install
-
-    #come back to the dpc_reconstruction folder
-    #and install the pipeline components
-    popd
     make
     make install
-
-## Structure
-
-A template for the pipeline components is available in the
-`dpc_reconstruction/template.py` file.
-
-The executable programs are in the `bin` folder. They are expected not to
-print any output, as in the linux commandline tradition, when they run
-successfully. Run them with the `--verbose` option to get more info on what
-is actually going on.
+    pyenv rehash
 
 ## Code style
 

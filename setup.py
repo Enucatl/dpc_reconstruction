@@ -29,6 +29,7 @@ setup(
     entry_points="""
     [console_scripts]
     flats_every = bin.flats_every:main
+    visibility = bin.visibility:main
     """
     # could also include long_description, download_url, classifiers, etc.
 )

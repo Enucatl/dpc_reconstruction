@@ -3,8 +3,6 @@
 """Reconstruct the DPC signals with multiple flats taken every flats_every
 files"""
 
-from __future__ import division, print_function
-
 import logging
 import logging.config
 
@@ -44,8 +42,7 @@ def main(
         steps,
         group,
         overwrite,
-        verbose,
-        jobs=1):
+        verbose):
     logging.config.dictConfig(
         logger_config.get_dict(verbose)
     )
