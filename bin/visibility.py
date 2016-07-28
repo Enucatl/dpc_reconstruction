@@ -33,10 +33,12 @@ def main(
     logging.config.dictConfig(
         logger_config.get_dict(verbose)
     )
-    datasets = np.stack(
+    datasets = np.squeeze(np.stack(
         [hdf5.read_group(filename, group)
             for filename in files]
-    )
+    ))
+    datasets = np.swapaxes(datasets, 0, 2)
+    log.debug("input datasets with shape %s", datasets.shape)
     output_name = hdf5.output_name(files)
     with tf.Session() as sess:
         tensor = tf.placeholder(
@@ -52,5 +54,10 @@ def main(
         log.debug("visibility dataset with shape %s", visibility_np.shape)
         with h5py.File(output_name) as output_file:
             group = output_file.require_group("postprocessing")
-            group.create_dataset("visibility", data=visibility_np)
+            try:
+                group.create_dataset("visibility", data=visibility_np)
+            except RuntimeError:
+                del group["visibility"]
+                log.info("overwriting visibility dataset")
+                group.create_dataset("visibility", data=visibility_np)
             log.info("saved data to %s", output_name)
