@@ -37,7 +37,6 @@ def main(
         [hdf5.read_group(filename, group)
             for filename in files]
     ))
-    datasets = np.swapaxes(datasets, 0, 2)
     log.debug("input datasets with shape %s", datasets.shape)
     output_name = hdf5.output_name(files)
     with tf.Session() as sess:

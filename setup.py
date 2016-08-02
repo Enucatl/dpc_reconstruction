@@ -28,7 +28,7 @@ setup(
     url="https://bitbucket.org/psitomcat/dpc_reconstruction",
     entry_points="""
     [console_scripts]
-    flats_every = bin.flats_every:main
+    dpc_radiography = bin.dpc_radiography:main
     visibility = bin.visibility:main
     """
     # could also include long_description, download_url, classifiers, etc.

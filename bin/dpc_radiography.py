@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # encoding: utf-8
-"""Reconstruct the DPC signals with multiple flats taken every flats_every
-files"""
+"""Reconstruct a DPC radiography with multiple flats
+taken every flats_every files
+
+1 file = 1 phase stepping curve
+
+"""
 
 import logging
 import logging.config
@@ -31,17 +35,17 @@ def chunks(l, n):
 @click.argument("files", nargs=-1, type=click.Path(exists=True))
 @click.option("--flats_every", default=1, type=int)
 @click.option("--n_flats", default=1, type=int)
-@click.option("--steps", type=int)
 @click.option("--group", default="raw_images")
 @click.option("--overwrite", is_flag=True)
+@click.option("--drop_last", is_flag=True)
 @click.option("-v", "--verbose", count=True)
 def main(
         files,
         flats_every,
         n_flats,
-        steps,
         group,
         overwrite,
+        drop_last,
         verbose):
     logging.config.dictConfig(
         logger_config.get_dict(verbose)
@@ -53,21 +57,21 @@ def main(
         sample_files = chunk[:flats_every]
         flat_files = chunk[flats_every:flats_every + n_flats]
         chunk_samples = np.stack(
-            [hdf5.read_group(sample, group)
+            [hdf5.read_group(sample, group, drop_last)
              for sample in sample_files])
+        log.debug("chunk sample shape %s", chunk_samples.shape)
         chunk_flats = np.stack(
-            [hdf5.read_group(sample, group)
+            [hdf5.read_group(sample, group, drop_last)
              for sample in flat_files])
-        if chunk_flats.shape[0] > 1:
+        if n_flats > 1:
             np.median(chunk_flats, axis=0, overwrite_input=True)
-            if chunk_samples.shape[0] > 1:
-                chunk_flats = np.tile(
-                    chunk_flats, (chunk_samples.shape[0], 1, 1)
-                )
+        log.debug("chunk flat shape %s", chunk_flats.shape)
         samples.append(chunk_samples)
         flats.append(chunk_flats)
-    samples = np.concatenate(samples)
-    flats = np.concatenate(flats)
+    samples = np.squeeze(np.stack(samples))
+    flats = np.squeeze(np.stack(flats))
+    log.debug("samples shape %s", samples.shape)
+    log.debug("flats shape %s", flats.shape)
     output_name = hdf5.output_name(files)
     with tf.Session() as sess:
         sample_tensor = tf.placeholder(
@@ -98,11 +102,26 @@ def main(
                   flats.shape)
         log.debug("phase_stepping_curves dataset with shape %s", flats.shape)
         log.debug("saving to %s", output_name)
-        with h5py.File(output_name, "w-") as output_file:
-            group = output_file.create_group("postprocessing")
-            group.create_dataset("dpc_reconstruction", data=dpc_np)
-            group.create_dataset("visibility", data=visibility_np)
-            group.create_dataset("flat_phase_stepping_curves", data=flats)
-            group.create_dataset("flat_parameters", data=flat_np)
-            group.create_dataset("phase_stepping_curves", data=samples)
-            log.info("saved data to %s", output_name)
+        with h5py.File(output_name) as output_file:
+            group = output_file.require_group("postprocessing")
+            try:
+                group.create_dataset("dpc_reconstruction", data=dpc_np)
+                group.create_dataset("visibility", data=visibility_np)
+                group.create_dataset("flat_phase_stepping_curves", data=flats)
+                group.create_dataset("flat_parameters", data=flat_np)
+                group.create_dataset("phase_stepping_curves", data=samples)
+                log.info("saved data to %s", output_name)
+            except RuntimeError:
+                if overwrite:
+                    del group["visibility"]
+                    del group["dpc_reconstruction"]
+                    del group["flat_phase_stepping_curves"]
+                    del group["flat_parameters"]
+                    del group["phase_stepping_curves"]
+                    group.create_dataset("dpc_reconstruction", data=dpc_np)
+                    group.create_dataset("visibility", data=visibility_np)
+                    group.create_dataset("flat_phase_stepping_curves",
+                                         data=flats)
+                    group.create_dataset("flat_parameters", data=flat_np)
+                    group.create_dataset("phase_stepping_curves", data=samples)
+                    log.info("data overwritten to %s", output_name)
