@@ -16,7 +16,7 @@ setup(
     ],
     package_data={
         # If any package contains *.txt or *.rst files, include them:
-        '': ['*.txt', '*.rst'],
+        '': ['*.txt', '*.rst', '*.so'],
     },
     # metadata for upload to PyPI
     author="TOMCAT DPC group",

@@ -21,21 +21,23 @@ log = logging.getLogger()
 @click.command()
 @click.argument("files", nargs=-1, type=click.Path(exists=True))
 @click.option("--flats_every", default=1, type=int)
-@click.option("--steps", type=int)
 @click.option("--group", default="raw_images")
+@click.option("--overwrite", is_flag=True)
+@click.option("--drop_last", is_flag=True)
 @click.option("-v", "--verbose", count=True)
 def main(
         files,
         flats_every,
-        steps,
         group,
+        overwrite,
+        drop_last,
         verbose):
     logging.config.dictConfig(
         logger_config.get_dict(verbose)
     )
     datasets = np.squeeze(np.stack(
-        [hdf5.read_group(filename, group)
-            for filename in files]
+        [hdf5.read_group(filename, group, drop_last)
+         for filename in files]
     ))
     log.debug("input datasets with shape %s", datasets.shape)
     output_name = hdf5.output_name(files)
@@ -55,8 +57,10 @@ def main(
             group = output_file.require_group("postprocessing")
             try:
                 group.create_dataset("visibility", data=visibility_np)
+                log.info("saved data to %s", output_name)
             except RuntimeError:
-                del group["visibility"]
-                log.info("overwriting visibility dataset")
-                group.create_dataset("visibility", data=visibility_np)
-            log.info("saved data to %s", output_name)
+                if overwrite:
+                    del group["visibility"]
+                    log.info("overwriting visibility dataset")
+                    group.create_dataset("visibility", data=visibility_np)
+                    log.info("data overwritten to %s", output_name)
