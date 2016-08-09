@@ -16,10 +16,10 @@ setup(
     ],
     package_data={
         # If any package contains *.txt or *.rst files, include them:
-        '': ['*.txt', '*.rst', '*.so'],
+        '': ['*.txt', '*.rst', 'src/arg.so'],
     },
     # metadata for upload to PyPI
-    author="TOMCAT DPC group",
+    author="Matteo Abis",
     author_email="",
     description="Analyse phase stepping curves",
     license="GNU GPL 3",
