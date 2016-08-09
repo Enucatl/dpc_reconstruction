@@ -131,7 +131,7 @@ class MergeFlatSample(pypes.component.Component):
                     a1_flat = flat[..., 2, np.newaxis]
                     sample[..., 0] /= a0_flat
                     sample[..., 1] -= phi_flat
-                    sample[..., 2] /= a1_flat / sample[..., 0]
+                    sample[..., 2] = sample[..., 2] / a1_flat / sample[..., 0]
                     # unwrap the phase values
                     sample[..., 1] = np.mod(
                         sample[..., 1] + np.pi, 2 * np.pi) - np.pi
