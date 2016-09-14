@@ -37,10 +37,7 @@ def get_signals(phase_stepping_curves, n_periods=1):
     a0 = tf.abs(transformed[:, :, 0])
     a1 = tf.abs(transformed[:, :, n_periods])
     phi1 = angle_module.arg(transformed[:, :, n_periods])
-    return tf.transpose(
-        tf.pack([a0, phi1, a1]),
-        perm=[1, 2, 0]
-    )
+    return tf.pack([a0, phi1, a1], axis=-1)
 
 
 def compare_sample_to_flat(sample, flat):
@@ -53,7 +50,4 @@ def compare_sample_to_flat(sample, flat):
         2 * np.pi
     ) - np.pi
     result2 = sample[:, :, 2] / flat[:, :, 2] / result0
-    return tf.transpose(
-        tf.pack([result0, result1, result2]),
-        perm=[1, 2, 0]
-    )
+    return tf.pack([result0, result1, result2], axis=-1)
