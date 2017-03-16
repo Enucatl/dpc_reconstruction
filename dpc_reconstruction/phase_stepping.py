@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 def visibility(data):
-    return 2 * data[:, :, 2] / data[:, :, 0]
+    return 2 * data[..., 2] / data[..., 0]
 
 
 def get_signals(phase_stepping_curves, n_periods=1):
@@ -34,20 +34,20 @@ def get_signals(phase_stepping_curves, n_periods=1):
         [phase_stepping_curves],
         [tf.complex128]
     )[0]
-    a0 = tf.abs(transformed[:, :, 0])
-    a1 = tf.abs(transformed[:, :, n_periods])
-    phi1 = angle_module.arg(transformed[:, :, n_periods])
-    return tf.pack([a0, phi1, a1], axis=-1)
+    a0 = tf.abs(transformed[..., 0])
+    a1 = tf.abs(transformed[..., n_periods])
+    phi1 = angle_module.arg(transformed[..., n_periods])
+    return tf.stack([a0, phi1, a1], axis=-1)
 
 
 def compare_sample_to_flat(sample, flat):
-    a0_flat = flat[:, :, 0]
-    phi_flat = flat[:, :, 1]
-    a1_flat = flat[:, :, 2]
-    result0 = sample[:, :, 0] / flat[:, :, 0]
+    a0_flat = flat[..., 0]
+    phi_flat = flat[..., 1]
+    a1_flat = flat[..., 2]
+    result0 = sample[..., 0] / flat[..., 0]
     result1 = tf.mod(
-        sample[:, :, 1] - flat[:, :, 1] + np.pi,
+        sample[..., 1] - flat[..., 1] + np.pi,
         2 * np.pi
     ) - np.pi
-    result2 = sample[:, :, 2] / flat[:, :, 2] / result0
-    return tf.pack([result0, result1, result2], axis=-1)
+    result2 = sample[..., 2] / flat[..., 2] / result0
+    return tf.stack([result0, result1, result2], axis=-1)
