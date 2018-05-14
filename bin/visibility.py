@@ -20,25 +20,34 @@ log = logging.getLogger()
 
 @click.command()
 @click.argument("files", nargs=-1, type=click.Path(exists=True))
-@click.option("--flats_every", default=1, type=int)
 @click.option("--group", default="raw_images")
 @click.option("--overwrite", is_flag=True)
+@click.option("--crop", type=int, nargs=4)
 @click.option("--drop_last", is_flag=True)
+@click.option("--phase_steps", type=int, default=0)
 @click.option("-v", "--verbose", count=True)
 def main(
         files,
-        flats_every,
         group,
         overwrite,
+        crop,
         drop_last,
+        phase_steps,
         verbose):
     logging.config.dictConfig(
         logger_config.get_dict(verbose)
     )
     datasets = np.squeeze(np.stack(
-        [hdf5.read_group(filename, group, drop_last)
+        [hdf5.read_group(filename, group, drop_last)[
+            crop[0]:crop[1], crop[2]:crop[3], ...]
          for filename in files]
     ))
+    if phase_steps:
+        log.debug(datasets.shape)
+        datasets = np.stack(np.split(
+            datasets,
+            datasets.shape[-1] // phase_steps,
+            axis=-1))
     log.debug("input datasets with shape %s", datasets.shape)
     output_name = hdf5.output_name(files)
     with tf.Session() as sess:
