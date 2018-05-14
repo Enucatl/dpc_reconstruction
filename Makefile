@@ -2,6 +2,7 @@
 TF_INC := $(shell python -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
 NSYNC_INC := ${TF_INC}/external/nsync/public/
 TF_LIB=$(shell python -c 'import tensorflow as tf; print(tf.sysconfig.get_lib())')
+TF_PYTHON=${TF_LIB}/python
 
 all: install .git/hooks/post-commit .git/hooks/pre-commit src/arg.so
 
@@ -18,7 +19,7 @@ install:
 	ln -s ../../pre-commit .git/hooks/pre-commit
 
 src/arg.so: src/arg.cc
-	g++ -std=c++11 -shared $< -o $@ -fPIC -I ${TF_INC} -I ${NSYNC_INC} -L${TF_LIB} -ltensorflow_framework -D_GLIBCXX_USE_CXX11_ABI=0
+	g++ -std=c++11 -shared ${TF_PYTHON}/_pywrap_tensorflow_internal.so $< -o $@ -fPIC -I ${TF_INC} -I ${NSYNC_INC} -L${TF_LIB} -ltensorflow_framework -D_GLIBCXX_USE_CXX11_ABI=0 
 
 tests: 
 	cd test; py.test
