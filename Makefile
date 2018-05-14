@@ -1,5 +1,7 @@
 .PHONY: all install test
 TF_INC := $(shell python -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
+NSYNC_INC := ${TF_INC}/external/nsync/public/
+TF_LIB=$(shell python -c 'import tensorflow as tf; print(tf.sysconfig.get_lib())')
 
 all: install .git/hooks/post-commit .git/hooks/pre-commit src/arg.so
 
@@ -16,10 +18,10 @@ install:
 	ln -s ../../pre-commit .git/hooks/pre-commit
 
 src/arg.so: src/arg.cc
-	g++ -std=c++11 -shared $< -o $@ -fPIC -I ${TF_INC}
+	g++ -std=c++11 -shared $< -o $@ -fPIC -I ${TF_INC} -I ${NSYNC_INC} -L${TF_LIB} -ltensorflow_framework -D_GLIBCXX_USE_CXX11_ABI=0
 
 tests: 
 	cd test; py.test
 
 clean:
-	rm -rf build dist
+	rm -rf build dist src/arg.so
