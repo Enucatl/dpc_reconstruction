@@ -6,7 +6,7 @@ from subprocess import check_output
 
 setup(
     name="dpc_reconstruction",
-    version="v5.0.0",
+    version="v5.1.0",
     packages=find_packages(exclude='test'),
     install_requires=[
         'numpy',
