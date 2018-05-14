@@ -16,8 +16,8 @@ modified = re.compile('^(?:M|A)(\s+)(?P<name>.*)')
 
 CHECKS = [
     {
-        'output': 'Running pep8...',
-        'command': 'pep8 -r --ignore=E501,W293 %s',
+        'output': 'Running pycodestyle...',
+        'command': 'pycodestyle -r --ignore=E501,W293 %s',
         'match_files': ['.*\.py$'],
         'ignore_files': ["setup.py", "distribute_setup.py"],
         'print_filename': False,

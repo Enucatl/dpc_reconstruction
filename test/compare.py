@@ -28,5 +28,6 @@ def main(oldfile, newfile):
     input()
     assert np.allclose(old_dataset, new_dataset)
 
+
 if __name__ == "__main__":
     main()
