@@ -1,26 +1,27 @@
-"""Default options for the logger."""
-
-config_dictionary = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'standard': {
-            'format':
-            '%(asctime)s %(levelname)-5.5s [%(name)s] %(message)s'
-            },
+def get_dict(verbose):
+    levels = [
+        'INFO',
+        'DEBUG',
+    ]
+    verbose = min(len(levels) - 1, verbose)
+    return dict(
+        version=1,
+        disable_existing_loggers=False,
+        formatters={
+            'f': {
+                'format':
+                '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
+            }
         },
-    'handlers': {
-        'default': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'standard',
-            },
+        handlers={
+            'h': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'f',
+                'level': levels[verbose],
+            }
         },
-    'loggers': {
-        '': {
-            'handlers': ['default'],
-            'level': 'INFO',
-            'propagate': True
-            },
-        }
-    }
+        root={
+            'handlers': ['h'],
+            'level': levels[verbose],
+        },
+    )

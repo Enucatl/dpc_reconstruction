@@ -2,78 +2,74 @@
 # encoding: utf-8
 """Calculate the visibility."""
 
-from __future__ import division, print_function
-
-import os
-
 import logging
 import logging.config
+
+import click
+import tensorflow as tf
+import numpy as np
+import h5py
+
 import dpc_reconstruction
-from dpc_reconstruction.logger_config import config_dictionary
+import dpc_reconstruction.io.hdf5 as hdf5
+import dpc_reconstruction.phase_stepping as phase_stepping
+import dpc_reconstruction.logger_config as logger_config
+
 log = logging.getLogger()
 
-import pypes.pipeline
-import pypes.packet
-import pypes.component
-from pypes.component import HigherOrderComponent
 
-from pypes.plugins.name_changer import NameChanger
-from dpc_reconstruction.commandline_parsers.phase_stepping\
-    import PhaseSteppingParser
-from pypes.plugins.hdf5 import Hdf5Writer
-from dpc_reconstruction.commandline_parsers.basic import BasicParser
-from dpc_reconstruction.networks.visibility import visibility_factory
-
-description = "{1}\n\n{0}\n".format(dpc_reconstruction.__version__, __doc__)
-commandline_parser = PhaseSteppingParser(description=description)
-commandline_parser.add_argument('files',
-                                metavar='FILE(s)',
-                                nargs='+',
-                                help='''file(s) with the images''')
-
-
-def main(file_names, phase_steps,
-         group="/",
-         overwrite=False, jobs=1,
-         batch=True):
-    """show on screen if not batch"""
-    vis_network = visibility_factory(phase_steps, group, overwrite, batch)
-    file_writer = Hdf5Writer()
-    name_changer = NameChanger({
-        "data": "visibility_map",
-    })
-    file_writer.set_parameter("group", "postprocessing")
-    file_writer.set_parameter("overwrite", overwrite)
-    visibility_calculator = pypes.component.HigherOrderComponent(vis_network)
-    visibility_calculator.__metatype__ = "ADAPTER"
-    network = {
-        visibility_calculator: {
-            name_changer: ("out", "in"),
-        },
-        name_changer: {
-            file_writer: ("out", "in"),
-        },
-    }
-    pipeline = pypes.pipeline.Dataflow(network, n=jobs)
-    log.debug("{0} {1}: analyzing {2} hdf5 files.".format(
-        __name__, dpc_reconstruction.__version__, len(file_names)))
-    for file_name in file_names:
-        if not os.path.exists(file_name) or not os.path.isfile(file_name):
-            log.error("{0}: file {1} not found!".format(
-                __name__, file_name))
-            raise OSError
-        packet = pypes.packet.Packet()
-        packet.set("file_name", file_name)
-        packet.set("data", group)
-        pipeline.send(packet)
-    pipeline.close()
-
-if __name__ == '__main__':
-    args = commandline_parser.parse_args()
-    if args.verbose:
-        config_dictionary['handlers']['default']['level'] = 'DEBUG'
-        config_dictionary['loggers']['']['level'] = 'DEBUG'
-    logging.config.dictConfig(config_dictionary)
-    main(args.files, args.steps,
-         args.group, args.overwrite,
-         args.jobs, args.batch)
+@click.command()
+@click.argument("files", nargs=-1, type=click.Path(exists=True))
+@click.option("--group", default="raw_images")
+@click.option("--overwrite", is_flag=True)
+@click.option("--crop", type=int, nargs=4)
+@click.option("--drop_last", is_flag=True)
+@click.option("--phase_steps", type=int, default=0)
+@click.option("-v", "--verbose", count=True)
+def main(
+        files,
+        group,
+        overwrite,
+        crop,
+        drop_last,
+        phase_steps,
+        verbose):
+    logging.config.dictConfig(
+        logger_config.get_dict(verbose)
+    )
+    datasets = np.squeeze(np.stack(
+        [hdf5.read_group(filename, group, drop_last)[
+            crop[0]:crop[1], crop[2]:crop[3], ...]
+         for filename in files]
+    ))
+    if phase_steps:
+        log.debug(datasets.shape)
+        datasets = np.stack(np.split(
+            datasets,
+            datasets.shape[-1] // phase_steps,
+            axis=-1))
+    log.debug("input datasets with shape %s", datasets.shape)
+    output_name = hdf5.output_name(files)
+    with tf.Session() as sess:
+        tensor = tf.placeholder(
+            tf.float32, shape=datasets.shape
+        )
+        signals = phase_stepping.get_signals(tensor)
+        visibility = phase_stepping.visibility(signals)
+        visibility_np = sess.run(
+            visibility,
+            feed_dict={
+                tensor: datasets
+            })
+        log.debug("visibility dataset with shape %s", visibility_np.shape)
+        with h5py.File(output_name) as output_file:
+            group = output_file.require_group("postprocessing")
+            try:
+                group.create_dataset("visibility", data=visibility_np)
+                log.info("saved data to %s", output_name)
+            except RuntimeError:
+                if overwrite:
+                    del group["visibility"]
+                    log.info("overwriting visibility dataset")
+                    group.create_dataset("visibility", data=visibility_np)
+                    log.info("data overwritten to %s", output_name)
